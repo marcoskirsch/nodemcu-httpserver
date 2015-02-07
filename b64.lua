@@ -108,6 +108,34 @@ function enc(data)
 	return result
 end
 
+local function toBase64Byte(char)
+   ascii = string.byte(char, 1)
+   if ascii >= string.byte('A', 1) and ascii <= string.byte('Z', 1) then
+      return ascii - string.byte('A', 1)
+   elseif ascii >= string.byte('a', 1) and ascii <= string.byte('z', 1) then
+      return ascii - string.byte('a', 1) + 26
+   elseif ascii >= string.byte('0', 1) and ascii <= string.byte('9', 1) then
+      return ascii + 4
+   elseif ascii == string.byte('-', 1) then
+      return 62
+   elseif ascii == string.byte('_', 1) then
+      return 63
+   elseif ascii == string.byte('=', 1) then
+      return nil
+   else
+      return "ERROR! Char is invalid for Base64 encoding: "..char
+   end
+end
+
+print(toBase64Byte('A'))
+print(toBase64Byte('B'))
+print(toBase64Byte('C'))
+print(toBase64Byte('D'))
+print(toBase64Byte('a'))
+print(toBase64Byte('b'))
+print(toBase64Byte('c'))
+print(toBase64Byte('d'))
+
 -- decryption table
 local base64bytes = {
    ['A']=0,
@@ -183,8 +211,9 @@ function dec(data)
 	local chars = {}
 	local result=""
 	for dpos=0,string.len(data)-1,4 do
-		for char=1,4 do chars[char] = base64bytes[(string.sub(data,(dpos+char),(dpos+char)) or "=")] end
-		result = string.format(
+--		for char=1,4 do chars[char] = base64bytes[(string.sub(data,(dpos+char),(dpos+char)) or "=")] end
+		for char=1,4 do chars[char] = toBase64Byte((string.sub(data,(dpos+char),(dpos+char)) or "=")) end
+			result = string.format(
 		   '%s%s%s%s',
 		   result,
 		   string.char(lor(lsh(chars[1],2), rsh(chars[2],4))),
