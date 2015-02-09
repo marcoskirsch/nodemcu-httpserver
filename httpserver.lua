@@ -3,55 +3,24 @@
 
 module("httpserver", package.seeall)
 
-require("TablePrinter")
-
 -- Functions below aren't part of the public API
 -- Clients don't need to worry about them.
 
--- given an HTTP request, returns the method (i.e. GET)
-local function getRequestMethod(request)
+-- given an HTTP method, returns it or if invalid returns nil
+local function validateMethod(method)
    -- HTTP Request Methods.
    -- HTTP servers are required to implement at least the GET and HEAD methods
    -- http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
-   httpMethods = {"GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"}
-   method = nil
+   local httpMethods = {"GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"}
    for i=1,#httpMethods do
-      found = string.find(request, httpMethods[i])
-      if found == 1 then
-         break
+      if httpMethods[i] == method then
+         return method
       end
    end
-   return (httpMethods[found])
+   return nil
 end
 
----- given an HTTP request, returns a table with all the information.
---local function parseRequest(request)
---   parsedRequest = {}
---
---   -- First get the method
---   parsedRequest["method"] = getRequestMethod(request)
---   if parsedRequest["method"] == nil then
---      return nil
---   end
---   -- Now get each value out of the header, skip the first line
---   lineNumber = 0
---   for line in request:gmatch("[^\r\n]+") do
---      if lineNumber ~=0 then
---         -- tag / value are of the style "Host: 10.0.7.15". Break them up.
---         found, valueIndex = string.find(line, ": ")
---         if found == nil then
---            break
---         end
---         tag = string.sub(line, 1, found - 1)
---         value = string.sub(line, found + 2, #line)
---         parsedRequest[tag] = value
---      end
---      lineNumber = lineNumber + 1
---   end
---   return parsedRequest
---end
-
-function parseRequest(request)
+local function parseRequest(request)
    local result = {}
    local matchEnd = 0
 
@@ -61,7 +30,7 @@ function parseRequest(request)
 
    matchBegin = matchEnd + 1
    matchEnd = string.find(request, " ", matchBegin)
-   result.url = string.sub(request, matchBegin, matchEnd-1)
+   result.uri = string.sub(request, matchBegin, matchEnd-1)
 
    matchBegin = matchEnd + 1
    matchEnd = string.find(request, "\r\n", matchBegin)
@@ -70,22 +39,62 @@ function parseRequest(request)
    return result
 end
 
+local function uriToFilename(uri)
+   if uri == "/" then return "http/index.html" end
+   return "http/" .. string.sub(uri, 2, -1)
+end
+
+local function on404NotFound(connection)
+   print("onNotFound: The requested file was not found.")
+   connection:send("HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " .. string.len(html) .. "\r\nConnection: close\r\n\r\n")
+   connection:send("<html><head><title>404 - Not Found</title></head><body><h1>404 - Not Found</h1></body></html>\r\n")
+   connection:close()
+end
+
+local function onGet(connection, uri)
+   print("onGet: requested uri is: " .. uri)
+   local fileExists = file.open(uriToFilename(uri), "r")
+   if not fileExists then
+      on404NotFound(connection)
+   else
+      connection:send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\Cache-Control: private, no-store\r\n\r\n")
+      connection:send(file.read())
+      connection:close()
+      file.close()
+   end
+end
+
 local function onReceive(connection, payload)
+   print ("onReceive: We have a customer!")
    print(payload) -- for debugging
 
    -- parse payload and decide what to serve.
    parsedRequest = parseRequest(payload)
-   --TablePrinter.print(parsedRequest, 3)
 
-   --generates HTML web site
-   httpHeader200 = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nCache-Control: private, no-store\r\n\r\n"
-   html = "<h1>Hola mundo</h1>"
-   connection:send(httpHeader200 .. html)
+   method = validateMethod(parsedRequest.method)
+
+   if method == nil then
+      onBadRequest(connection)
+      return
+   end
+
+   if method == "GET" then
+      onGet(connection, parsedRequest.uri)
+      return
+   end
+
+   onNotImplemented(connection)
+
 end
+
+local function onSent(connection)
+   print ("onSent: Thank you, come again.")
+end
+
 
 local function handleRequest(connection)
    connection:on("receive", onReceive)
-   connection:on("sent", function(connection) connection:close() end)
+   connection:on("sent", onSent)
 end
 
 -- Starts web server in the specified port.
@@ -99,7 +108,5 @@ end
 function httpserver.stop(server)
    server:close()
 end
-
-return mymodule
 
 
