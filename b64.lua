@@ -3,6 +3,9 @@
 -- compatible with lua 5.1
 -- http://www.it-rfc.de
 -- licensed under the terms of the LGPL2
+--module('b64', package.seeall)
+
+b64 = {}
 
 -- bitshift functions (<<, >> equivalent)
 -- shift left
@@ -42,7 +45,7 @@ end
 
 -- function decode
 -- decode base64 input to string
-function decode(data)
+function b64.decode(data)
 	local chars = {}
 	local result=""
 	for dpos=0,string.len(data)-1,4 do
@@ -60,4 +63,4 @@ function decode(data)
 	return result
 end
 
-module('b64',package.seeall)
+return b64
