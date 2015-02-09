@@ -1,5 +1,5 @@
 -- figuring out how to parse http header
-require "webServer"
+--require "webServer"
 --require "printTable"
 --require "b64"
 
@@ -17,9 +17,60 @@ requestForGet =
 --print(enc(requestForGet))
 --print(dec(enc(requestForGet)))
 
-parsedRequest = webServer.private.parseRequest(requestForGet)
+--parsedRequest = webServer.private.parseRequest(requestForGet)
+
+function parseRequest(request)
+   local result = {}
+   local matchEnd = 0
+
+   local matchBegin = matchEnd + 1
+   matchEnd = string.find (requestForGet, " ", matchBegin)
+   result.method = string.sub(requestForGet, matchBegin, matchEnd-1)
+
+   matchBegin = matchEnd + 1
+   matchEnd = string.find(requestForGet, " ", matchBegin)
+   result.url = string.sub(requestForGet, matchBegin, matchEnd-1)
+
+   matchBegin = matchEnd + 1
+   matchEnd = string.find(requestForGet, "\r\n", matchBegin)
+   result.version = string.sub(requestForGet, matchBegin, matchEnd-1)
+
+   return result
+end
+
+
+--print(result.method)
+--print(result.url)
+--print(result.version)
 
 --printTable(parsedRequest, 3)
 --printTable(nodemcu-http-server, 3)
 --parsedRequest = webServer.parseRequest(requestForGet)
 
+local function validateMethod(method)
+   -- HTTP Request Methods.
+   -- HTTP servers are required to implement at least the GET and HEAD methods
+   -- http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
+   local httpMethods = {"GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"}
+   for i=1,#httpMethods do
+      if httpMethods[i] == method then
+         return method
+      end
+   end
+   return nil
+end
+
+--print(validateMethod("GET"))
+--print(validateMethod("POST"))
+--print(validateMethod("garbage"))
+
+local function uriToFilename(uri)
+   if uri == "/" then return "http/index.html" end
+   return "http/" .. string.sub(uri, 2, -1)
+end
+
+print(uriToFilename("/index.html"))
+print(uriToFilename("/"))
+
+a = nil
+if not a then print("hello") end
