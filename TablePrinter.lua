@@ -1,9 +1,9 @@
 -- Print anything - including nested tables
 -- Based on but modified from:
 -- http://lua-users.org/wiki/TableSerialization
-module("printTable", package.seeall)
+module("TablePrinter", package.seeall)
 
-function printTable.printTable (tt, indent, done)
+function TablePrinter.print (tt, indent, done)
    done = done or {}
    indent = indent or 0
    if tt == nil then
