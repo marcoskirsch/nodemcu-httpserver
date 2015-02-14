@@ -59,7 +59,12 @@ local function onGet(connection, uri)
    else
       -- Use HTTP/1.0 to ensure client closes connection.
       connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\Cache-Control: private, no-store\r\n\r\n")
-      connection:send(file.read())
+      -- Send file in little 128-byte chunks
+      while true do
+         local chunk = file.read(128)
+         if chunk == nil then break end
+         connection:send(chunk)
+      end
       connection:close()
       file.close()
    end
