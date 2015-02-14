@@ -3,7 +3,6 @@
 -- compatible with lua 5.1
 -- http://www.it-rfc.de
 -- licensed under the terms of the LGPL2
---module('b64', package.seeall)
 
 b64 = {}
 
@@ -15,7 +14,9 @@ end
 
 -- shift right
 local function rsh(value,shift)
-	return math.floor(value/2^shift) % 256
+   -- Lua builds with no floating point don't define math.
+   if math then return math.floor(value/2^shift) % 256 end
+   return (value/2^shift) % 256
 end
 
 -- return single bit (for OR)
