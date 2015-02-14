@@ -20,23 +20,13 @@ local function validateMethod(method)
    return nil
 end
 
-local function parseRequest(request)
-   local result = {}
-   local matchEnd = 0
-
-   local matchBegin = matchEnd + 1
-   matchEnd = string.find (request, " ", matchBegin)
-   result.method = string.sub(request, matchBegin, matchEnd-1)
-
-   matchBegin = matchEnd + 1
-   matchEnd = string.find(request, " ", matchBegin)
-   result.uri = string.sub(request, matchBegin, matchEnd-1)
-
-   matchBegin = matchEnd + 1
-   matchEnd = string.find(request, "\r\n", matchBegin)
-   result.version = string.sub(request, matchBegin, matchEnd-1)
-
-   return result
+function parseRequest(request)
+   local e = request:find("\r\n", 1, true)
+   if not e then return nil end
+   local line = request:sub(1, e - 1)
+   local r = {}
+   _, i, r.method, r.uri = line:find("^([A-Z]+) (.-) HTTP/[1-9]+.[1-9]+$")
+   return r
 end
 
 local function uriToFilename(uri)
@@ -73,24 +63,12 @@ end
 local function onReceive(connection, payload)
    print ("onReceive: We have a customer!")
    --print(payload) -- for debugging
-
    -- parse payload and decide what to serve.
    parsedRequest = parseRequest(payload)
-
-   method = validateMethod(parsedRequest.method)
-
-   if method == nil then
-      onError(connection, 400, "Bad Request")
-      return
-   end
-
-   if method == "GET" then
-      onGet(connection, parsedRequest.uri)
-      return
-   end
-
-   onNotImplemented(connection, 501, "Not Implemented")
-
+   parsedRequest.method = validateMethod(parsedRequest.method)
+   if parsedRequest.method == nil then onError(connection, 400, "Bad Request")
+   elseif parsedRequest.method == "GET" then onGet(connection, parsedRequest.uri)
+   else onNotImplemented(connection, 501, "Not Implemented") end
 end
 
 local function onSent(connection)
