@@ -44,10 +44,10 @@ local function uriToFilename(uri)
    return "http/" .. string.sub(uri, 2, -1)
 end
 
-local function on404NotFound(connection)
-   print("onNotFound: The requested file was not found.")
-   connection:send("HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " .. string.len(html) .. "\r\nConnection: close\r\n\r\n")
-   connection:send("<html><head><title>404 - Not Found</title></head><body><h1>404 - Not Found</h1></body></html>\r\n")
+local function onError(connection, errorCode, errorString)
+   print(errorCode .. ": " .. errorString)
+   connection:send("HTTP/1.0 " .. errorCode .. " " .. errorString .. "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n")
+   connection:send("<html><head><title>" .. errorCode .. " - " .. errorString .. "</title></head><body><h1>" .. errorCode .. " - " .. errorString .. "</h1></body></html>\r\n")
    connection:close()
 end
 
@@ -55,9 +55,10 @@ local function onGet(connection, uri)
    print("onGet: requested uri is: " .. uri)
    local fileExists = file.open(uriToFilename(uri), "r")
    if not fileExists then
-      on404NotFound(connection)
+      onError(connection, 404, "Not Found")
    else
-      connection:send("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\Cache-Control: private, no-store\r\n\r\n")
+      -- Use HTTP/1.0 to ensure client closes connection.
+      connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\Cache-Control: private, no-store\r\n\r\n")
       connection:send(file.read())
       connection:close()
       file.close()
@@ -66,7 +67,7 @@ end
 
 local function onReceive(connection, payload)
    print ("onReceive: We have a customer!")
-   print(payload) -- for debugging
+   --print(payload) -- for debugging
 
    -- parse payload and decide what to serve.
    parsedRequest = parseRequest(payload)
@@ -74,7 +75,7 @@ local function onReceive(connection, payload)
    method = validateMethod(parsedRequest.method)
 
    if method == nil then
-      onBadRequest(connection)
+      onError(connection, 400, "Bad Request")
       return
    end
 
@@ -83,7 +84,7 @@ local function onReceive(connection, payload)
       return
    end
 
-   onNotImplemented(connection)
+   onNotImplemented(connection, 501, "Not Implemented")
 
 end
 
@@ -101,6 +102,7 @@ end
 function httpserver.start(port, clientTimeoutInSeconds)
    server = net.createServer(net.TCP, clientTimeoutInSeconds)
    server:listen(port, handleRequest)
+   print("nodemcu-httpserver running at " .. port .. ":" .. wifi.sta.getip())
    return server
 end
 
