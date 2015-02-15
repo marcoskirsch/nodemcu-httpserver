@@ -12,7 +12,7 @@ wifi.sta.config("Internet","")
 
 -- Wait until WiFi connection is established
 
-tmr.alarm(0, 2000, 1, function()
+tmr.alarm(0, 3000, 1, function()
    if wifi.sta.getip() == nil then
       print("Connecting to AP...")
    else
