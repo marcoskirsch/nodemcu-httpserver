@@ -37,7 +37,6 @@ local function onError(connection, errorCode, errorString)
    print(errorCode .. ": " .. errorString)
    connection:send("HTTP/1.0 " .. errorCode .. " " .. errorString .. "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n")
    connection:send("<html><head><title>" .. errorCode .. " - " .. errorString .. "</title></head><body><h1>" .. errorCode .. " - " .. errorString .. "</h1></body></html>\r\n")
-   connection:close()
 end
 
 local function parseUri(uri)
@@ -51,6 +50,7 @@ local function parseUri(uri)
       r.args = uri:sub(questionMarkPos+1, #uri)
    end
    _, r.ext = r.file:match("(.+)%.(.+)")
+   r.isScript = r.ext == "lua"
    return r
 end
 
@@ -79,28 +79,34 @@ local function onGet(connection, uri)
    if not fileExists then
       onError(connection, 404, "Not Found")
    else
-      -- Use HTTP/1.0 to ensure client closes connection.
-      connection:send("HTTP/1.0 200 OK\r\nContent-Type: " .. getMimeType(uri.ext) .. "\r\Cache-Control: private, no-store\r\n\r\n")
-      -- Send file in little 128-byte chunks
-      while true do
-         local chunk = file.read(128)
-         if chunk == nil then break end
-         connection:send(chunk)
+      if uri.isScript then
+         file.close()
+         dofile(uriToFilename(uri.file))(connection, uri.args)
+      else
+         -- Use HTTP/1.0 to ensure client closes connection.
+         connection:send("HTTP/1.0 200 OK\r\nContent-Type: " .. getMimeType(uri.ext) .. "\r\Cache-Control: private, no-store\r\n\r\n")
+         -- Send file in little 128-byte chunks
+         while true do
+            local chunk = file.read(128)
+            if chunk == nil then break end
+            connection:send(chunk)
+         end
+         file.close()
       end
-      connection:close()
-      file.close()
    end
+   collectgarbage()
 end
 
 local function onReceive(connection, payload)
-   print ("onReceive: We have a customer!")
    --print(payload) -- for debugging
    -- parse payload and decide what to serve.
-   parsedRequest = parseRequest(payload)
+   local parsedRequest = parseRequest(payload)
+   print("Requested URI: " .. parsedRequest.uri)
    parsedRequest.method = validateMethod(parsedRequest.method)
    if parsedRequest.method == nil then onError(connection, 400, "Bad Request")
    elseif parsedRequest.method == "GET" then onGet(connection, parsedRequest.uri)
    else onNotImplemented(connection, 501, "Not Implemented") end
+   connection:close()
 end
 
 local function onSent(connection)
