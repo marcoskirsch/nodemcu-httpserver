@@ -30,7 +30,6 @@ function parseRequest(request)
 end
 
 local function uriToFilename(uri)
-   if uri == "/" then return "http/index.html" end
    return "http/" .. string.sub(uri, 2, -1)
 end
 
@@ -43,7 +42,6 @@ end
 
 local function parseUri(uri)
    if uri == "/" then uri = "/index.html" end
-   print ("uri is " .. uri)
    questionMarkPos, b, c, d, e, f = uri:find("?")
    r = {}
    if questionMarkPos == nil then
@@ -76,12 +74,11 @@ local function getMimeType(ext)
 end
 
 local function onGet(connection, uri)
-   print("onGet: requested uri is: " .. uri)
-   local fileExists = file.open(uriToFilename(uri), "r")
+   uri = parseUri(uri)
+   local fileExists = file.open(uriToFilename(uri.file), "r")
    if not fileExists then
       onError(connection, 404, "Not Found")
    else
-      uri = parseUri(uri)
       -- Use HTTP/1.0 to ensure client closes connection.
       connection:send("HTTP/1.0 200 OK\r\nContent-Type: " .. getMimeType(uri.ext) .. "\r\Cache-Control: private, no-store\r\n\r\n")
       -- Send file in little 128-byte chunks
