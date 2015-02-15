@@ -31,9 +31,27 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
    of the file "http/myPage.html" (if it exists). If you visit the root (/)
    then index.html is server. By the way, the URLs are case-sensitive.
 
+## How to create dynamic Lua scripts
+
+   Similar to static files, upload a Lua script called "http/[name].lua where you replace [name] with the script's name.
+   The script should return a function that takes two parameters:
+
+      return function (connection, args)
+         -- code goes here
+      end
+
+   Use the _connection_ parameter to send the response back to the client. Note that you are in charge of sending the HTTP header.
+   The _args_ parameter is a Lua table that contains any arguments sent by the client in the GET request.
+
+   For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
+   in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color == "red"_.
+
 ## Not supported
 
 * Other methods: HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH
 * Server side scripting.
 
 ## Open issues
+* File system doesn't like long names, need to protect:
+
+        PANIC: unprotected error in call to Lua API (httpserver.lua:78: filename too long)
