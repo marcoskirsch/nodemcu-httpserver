@@ -3,9 +3,10 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
 ## Features
 
-* **GET**
-* **Multiple MIME types**
-* **Error pages (404 and others)**
+* GET
+* Multiple MIME types
+* Error pages (404 and others)
+* Remote execution of Lua scripts
 
 ## How to use
 
