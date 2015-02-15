@@ -41,14 +41,49 @@ local function onError(connection, errorCode, errorString)
    connection:close()
 end
 
+local function parseUri(uri)
+   if uri == "/" then uri = "/index.html" end
+   print ("uri is " .. uri)
+   questionMarkPos, b, c, d, e, f = uri:find("?")
+   r = {}
+   if questionMarkPos == nil then
+      r.file = uri:sub(1, questionMarkPos)
+   else
+      r.file = uri:sub(1, questionMarkPos - 1)
+      r.args = uri:sub(questionMarkPos+1, #uri)
+   end
+   _, r.ext = r.file:match("(.+)%.(.+)")
+   return r
+end
+
+local function getMimeType(ext)
+   -- A few MIME types. No need to go crazy in this list. If you need something that is missing, let's add it.
+   local mimeTypes = {}
+   mimeTypes.css = "text/css"
+   mimeTypes.gif = "image/gif"
+   mimeTypes.htm = "text/html"
+   mimeTypes.html = "text/html"
+   mimeTypes.ico = "image/x-icon"
+   mimeTypes.jpe = "image/jpeg"
+   mimeTypes.jpeg = "image/jpeg"
+   mimeTypes.jpg = "image/jpeg"
+   mimeTypes.js = "application/javascript"
+   mimeTypes.png = "image/png"
+   mimeTypes.txt = "text/plain"
+   if mimeTypes[ext] then return mimeTypes[ext] end
+   -- default to text.
+   return "text/plain"
+end
+
 local function onGet(connection, uri)
    print("onGet: requested uri is: " .. uri)
    local fileExists = file.open(uriToFilename(uri), "r")
    if not fileExists then
       onError(connection, 404, "Not Found")
    else
+      uri = parseUri(uri)
       -- Use HTTP/1.0 to ensure client closes connection.
-      connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\Cache-Control: private, no-store\r\n\r\n")
+      connection:send("HTTP/1.0 200 OK\r\nContent-Type: " .. getMimeType(uri.ext) .. "\r\Cache-Control: private, no-store\r\n\r\n")
       -- Send file in little 128-byte chunks
       while true do
          local chunk = file.read(128)
@@ -85,7 +120,7 @@ end
 function httpserver.start(port, clientTimeoutInSeconds)
    server = net.createServer(net.TCP, clientTimeoutInSeconds)
    server:listen(port, handleRequest)
-   print("nodemcu-httpserver running at " .. port .. ":" .. wifi.sta.getip())
+   print("nodemcu-httpserver running at " .. wifi.sta.getip() .. ":" ..  port)
    return server
 end
 
