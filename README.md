@@ -56,3 +56,5 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 * File system doesn't like long names, need to protect:
 
         PANIC: unprotected error in call to Lua API (httpserver.lua:78: filename too long)
+
+* System is very, very memory constrained. Remote execution of Lua scripts only works with trivial scripts.
