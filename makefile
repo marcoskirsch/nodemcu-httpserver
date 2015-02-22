@@ -3,14 +3,14 @@
 # User configuration
 ######################################################################
 # Path to the tool and serial port
-LUATOOL=./luatool/luatool/luatool.py
-PORT=/dev/ttyUSB0
+LUATOOL=../luatool/luatool/luatool.py
+PORT=/dev/cu.usbserial-A602HRAZ
 
 ######################################################################
 # End of user config
 ######################################################################
-HTTP_FILES := $(wildcard http/*html)
-LUA_FILES := init.lua httpserver.lua 
+HTTP_FILES := $(wildcard http/*)
+LUA_FILES := init.lua httpserver.lua
 
 # Print usage
 usage:
@@ -23,7 +23,7 @@ upload_http: $(HTTP_FILES)
 	$(foreach f, $^, $(LUATOOL) -f $(f) -t $(f) -p $(PORT);)
 
 # Upload httpserver lua files (init and server module)
-upload_lua: $(LUA_FILES) 
+upload_lua: $(LUA_FILES)
 	$(foreach f, $^, $(LUATOOL) -f $(f) -t $(f) -p $(PORT);)
 
 # Upload all
