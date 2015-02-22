@@ -1,6 +1,4 @@
 -- Tell the chip to connect to the access point
-
-print('Welcome')
 wifi.setmode(wifi.STATION)
 print('set mode=STATION (mode='..wifi.getmode()..')')
 print('MAC: ',wifi.sta.getmac())
@@ -14,6 +12,9 @@ tmr.alarm(0, 3000, 1, function()
    else
       tmr.stop(0)
       print('IP: ',wifi.sta.getip())
+      -- Uncomment to automatically start the server.
+      -- require("httpserver")
+      -- server = httpserver.start(80, 10)
    end
 end)
 
