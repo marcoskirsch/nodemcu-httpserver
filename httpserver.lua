@@ -8,19 +8,11 @@ module("httpserver", package.seeall)
 
 -- given an HTTP method, returns it or if invalid returns nil
 local function validateMethod(method)
-   -- HTTP Request Methods.
-   -- HTTP servers are required to implement at least the GET and HEAD methods
-   -- http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
-   local httpMethods = {"GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "OPTIONS", "CONNECT", "PATCH"}
-   for i=1,#httpMethods do
-      if httpMethods[i] == method then
-         return method
-      end
-   end
-   return nil
+   local httpMethods = {GET=true, HEAD=true, POST=true, PUT=true, DELETE=true, TRACE=true, OPTIONS=true, CONNECT=true, PATCH=true}
+   if httpMethods[method] then return method else return nil end
 end
 
-function parseRequest(request)
+local function parseRequest(request)
    local e = request:find("\r\n", 1, true)
    if not e then return nil end
    local line = request:sub(1, e - 1)
@@ -39,49 +31,61 @@ local function onError(connection, errorCode, errorString)
    connection:send("<html><head><title>" .. errorCode .. " - " .. errorString .. "</title></head><body><h1>" .. errorCode .. " - " .. errorString .. "</h1></body></html>\r\n")
 end
 
+local function parseArgs(args)
+   local r = {}; i=1
+   if args == nil or args == "" then return r end
+   for arg in string.gmatch(args, "([^&]+)") do
+      local name, value = string.match(arg, "(.*)=(.*)")
+      if name ~= nil then r[name] = value end
+      i = i + 1
+   end
+   return r
+end
+
 local function parseUri(uri)
+   local r = {}
+   if uri == nil then return r end
    if uri == "/" then uri = "/index.html" end
    questionMarkPos, b, c, d, e, f = uri:find("?")
-   r = {}
    if questionMarkPos == nil then
       r.file = uri:sub(1, questionMarkPos)
+      r.args = {}
    else
       r.file = uri:sub(1, questionMarkPos - 1)
-      r.args = uri:sub(questionMarkPos+1, #uri)
+      r.args = parseArgs(uri:sub(questionMarkPos+1, #uri))
    end
    _, r.ext = r.file:match("(.+)%.(.+)")
-   r.isScript = r.ext == "lua"
+   r.isScript = r.ext == "lua" or r.ext == "lc"
+   r.file = uriToFilename(r.file)
    return r
 end
 
 local function getMimeType(ext)
    -- A few MIME types. No need to go crazy in this list. If you need something that is missing, let's add it.
-   local mimeTypes = {}
-   mimeTypes.css = "text/css"
-   mimeTypes.gif = "image/gif"
-   mimeTypes.htm = "text/html"
-   mimeTypes.html = "text/html"
-   mimeTypes.ico = "image/x-icon"
-   mimeTypes.jpe = "image/jpeg"
-   mimeTypes.jpeg = "image/jpeg"
-   mimeTypes.jpg = "image/jpeg"
-   mimeTypes.js = "application/javascript"
-   mimeTypes.png = "image/png"
-   mimeTypes.txt = "text/plain"
-   if mimeTypes[ext] then return mimeTypes[ext] end
+   local mt = {}
+   mt.css = "text/css"
+   mt.gif = "image/gif"
+   mt.html = "text/html"
+   mt.ico = "image/x-icon"
+   mt.jpeg = "image/jpeg"
+   mt.jpg = "image/jpeg"
+   mt.js = "application/javascript"
+   mt.png = "image/png"
+   if mt[ext] then return mt[ext] end
    -- default to text.
    return "text/plain"
 end
 
 local function onGet(connection, uri)
-   uri = parseUri(uri)
-   local fileExists = file.open(uriToFilename(uri.file), "r")
+   local uri = parseUri(uri)
+   local fileExists = file.open(uri.file, "r")
    if not fileExists then
       onError(connection, 404, "Not Found")
    else
       if uri.isScript then
          file.close()
-         dofile(uriToFilename(uri.file))(connection, uri.args)
+         collectgarbage()
+         dofile(uri.file)(connection, uri.args)
       else
          -- Use HTTP/1.0 to ensure client closes connection.
          connection:send("HTTP/1.0 200 OK\r\nContent-Type: " .. getMimeType(uri.ext) .. "\r\Cache-Control: private, no-store\r\n\r\n")
@@ -100,36 +104,25 @@ end
 local function onReceive(connection, payload)
    --print(payload) -- for debugging
    -- parse payload and decide what to serve.
-   local parsedRequest = parseRequest(payload)
-   print("Requested URI: " .. parsedRequest.uri)
-   parsedRequest.method = validateMethod(parsedRequest.method)
-   if parsedRequest.method == nil then onError(connection, 400, "Bad Request")
-   elseif parsedRequest.method == "GET" then onGet(connection, parsedRequest.uri)
-   else onNotImplemented(connection, 501, "Not Implemented") end
+   local req = parseRequest(payload)
+   print("Requested URI: " .. req.uri)
+   req.method = validateMethod(req.method)
+   if req.method == nil then onError(connection, 400, "Bad Request")
+   elseif req.method == "GET" then onGet(connection, req.uri)
+   else onError(connection, 501, "Not Implemented") end
    connection:close()
 end
 
-local function onSent(connection)
-   print ("onSent: Thank you, come again.")
-end
-
-
 local function handleRequest(connection)
    connection:on("receive", onReceive)
-   connection:on("sent", onSent)
 end
 
 -- Starts web server in the specified port.
 function httpserver.start(port, clientTimeoutInSeconds)
-   server = net.createServer(net.TCP, clientTimeoutInSeconds)
-   server:listen(port, handleRequest)
+   s = net.createServer(net.TCP, clientTimeoutInSeconds)
+   s:listen(port, handleRequest)
    print("nodemcu-httpserver running at " .. wifi.sta.getip() .. ":" ..  port)
-   return server
-end
-
--- Stops the server.
-function httpserver.stop(server)
-   server:close()
+   return s
 end
 
 
