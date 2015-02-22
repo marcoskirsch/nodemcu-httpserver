@@ -8,20 +8,21 @@
    <h1>Hello World!</h1>
    <div>
    <section>
-   <h3>nodemcu-httpserver</h3>
-   <p>This page is served by nodemcu-httpserver running on an ESP8266. One of the smallest web servers... ever!</p>
+   <p>
+      This page is served by <b>nodemcu-httpserver</b> running on an ESP8266 that uses the <a href="http://nodemcu.com/index_en.html">NodeMCU</a> firmware.
+      NodeMCU puts a <a href="http://www.lua.org">Lua</a> interpreter inside the ESP8266. This is surely one of the smallest web servers to date!
+   </p>
 
    <h3>Where's the source code?</h3>
-   <p><a href="https://github.com/marcoskirsch/nodemcu-httpserver">Right here</a></p>
+   <p>You can find the Lua code for nodemcu-httpserver in <a href="https://github.com/marcoskirsch/nodemcu-httpserver">GitHub</a></p>
 
-   <h3>Show me the demos</h3>
+   <h3>Serve me some pages!</h3>
    <ul>
-      <li><a href="index.html">This page</a> (static)</li>
-      <li><a href="file_list.lua">List all server files</a> (Lua)</li>
-      <li><a href="node_info.lua">NodeMCU info</a> (Lua)</li>
-      <li><a href="memory.lua">Memory statistics</a> (Lua)</li>
-      <li><a href="foo.html">A file not found</a> (error)</li>
-      <li><a href="args.lua?color=red&size=big&number=42">Argument parsing</a> (Lua)</li>
+      <li><a href="index.html">Index</a>: This page (static)</li>
+      <li><a href="args.lua">Arguments</a>: Parses arguments passed in the URL and prints them. (Lua)</li>
+      <li><a href="file_list.lua">List all server files</a>: Displays a list of all the server files. (Lua)</li>
+      <li><a href="node_info.lua">NodeMCU info</a>: Shows some basic NodeMCU(Lua)</li>
+      <li><a href="foo.html">Foo</a>: A file that isn't actually in the server. Should error (error)</li>
    </ul>
 </body>
 </html>

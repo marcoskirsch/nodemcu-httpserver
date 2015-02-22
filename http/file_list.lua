@@ -1,21 +1,20 @@
-local function sendHeader(connection)
+return function (connection, args)
    connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\Cache-Control: private, no-store\r\n\r\n")
-end
-
-local function sendFileList(connection)
+   connection:send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Server File Listing</title></head>')
+   connection:send('<body>')
+   connection:send('<h1>Server File Listing</h1>')
    connection:send("<ul>\n")
+
    local l = file.list()
    for name, size in pairs(l) do
-      connection:send("   <li>" .. name .. " (" .. size .. ")</li>\n")
+
+      local isHttpFile = string.match(name, "(http/)") ~= nil
+      local url = string.match(name, ".*/(.*)")
+      if isHttpFile then
+         connection:send('   <li><a href="' .. url .. '">' .. url .. "</a> (" .. size .. " bytes)</li>\n")
+      end
+
    end
    connection:send("</ul>\n")
-end
-
-return function (connection, args)
-   sendHeader(connection)
-   connection:send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>A Lua script sample</title></head>')
-   connection:send('<body>')
-   connection:send('<h1>File Listing</h1>')
-   sendFileList(connection)
    connection:send('</body></html>')
 end
