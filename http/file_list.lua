@@ -12,6 +12,8 @@ return function (connection, args)
       local url = string.match(name, ".*/(.*)")
       if isHttpFile then
          connection:send('   <li><a href="' .. url .. '">' .. url .. "</a> (" .. size .. " bytes)</li>\n")
+         -- this list could be very long, so we'll yield in order to avoid overflowing the send buffer.
+         coroutine.yield()
       end
 
    end
