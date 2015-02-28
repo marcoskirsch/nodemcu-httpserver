@@ -12,9 +12,8 @@ tmr.alarm(0, 3000, 1, function()
    else
       tmr.stop(0)
       print('IP: ',wifi.sta.getip())
-      -- Uncomment to automatically start the server.
-      -- require("httpserver")
-      -- server = httpserver.start(80, 10)
+      -- Uncomment to automatically start the server in port 80
+      -- dofile("httpserver.lc")(80, 10)
    end
 end)
 
