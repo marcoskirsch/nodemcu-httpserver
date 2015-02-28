@@ -4,14 +4,14 @@ return function (connection, args)
    connection:send('<body>')
    connection:send('<h1>Arguments</h1>')
 
-local form = [===[
-<form method="GET">
-   First name:<br><input type="text" name="firstName"><br>
-   Last name:<br><input type="text" name="lastName"><br>
-   <input type="radio" name="sex" value="male" checked>Male<input type="radio" name="sex" value="female">Female<br>
-   <input type="submit" value="Submit">
-</form>
-]===]
+   local form = [===[
+   <form method="GET">
+      First name:<br><input type="text" name="firstName"><br>
+      Last name:<br><input type="text" name="lastName"><br>
+      <input type="radio" name="sex" value="male" checked>Male<input type="radio" name="sex" value="female">Female<br>
+      <input type="submit" value="Submit">
+   </form>
+   ]===]
 
    connection:send(form)
 
