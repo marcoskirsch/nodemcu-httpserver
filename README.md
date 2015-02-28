@@ -6,23 +6,29 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 * GET
 * Multiple MIME types
 * Error pages (404 and others)
-* Remote execution of Lua scripts
+* Server-side execution of Lua scripts
 * Query string argument parsing
 
 ## How to use
 
 1. Upload server files using [luatool.py](https://github.com/4refr0nt/luatool) or equivalent.
    Or, even better, use GNU Make with the bundled makefile. Type the following to upload
-   server, init, and some example files.
+   server code, init.lua (which you may want to modify), and some example files.
 
          make upload
 
-   Add the following to your init.lua in order to start the server:
+   Compile the server files so that it uses less memory. This needs free memory so I suggest
+   you do it after a fresh node.restart().
 
-         require("httpserver")
-         server = httpserver.start(80, 10)
+         node.compile("httpserver.lua")
+         node.compile("httpserver-static.lua")
+         node.compile("httpserver-error.lua")
 
-   In this example, 80 is the port your server is listening to, and 10 is the timeout (in seconds) for clients.
+   If this is not in init.lua, then start the server by typing:
+
+         dofile("httpserver.lc")(80)
+
+   In this example, 80 is the port your server is listening at but you can change it.
 
 2. Upload files you want to serve.
    Again, use luatool.py or similar and upload the HTML and other files.
@@ -54,7 +60,13 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
    For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
    in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color == "red"_.
 
-   The easiest is to look at some of the included example scripts.
+   If you are going to be sending lots (as in over a KB) of data, you should yield the thread/coroutine every now and then
+   in order to avoid overflowing the buffer in the microcontroller. Use:
+
+      coroutine.yield()
+
+   Look at the included example scripts for more ideas.
+
 
 ## Not supported
 
@@ -70,28 +82,21 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
 * nodemcu firmware with floating point doesn't have enough memory to compile nor run the server. See below.
 
-* Binary files haven't been tested yet since luatool.py doesn't support uploading anything but text files.
-  If anyone has any luck with this, let us know!
+* luatool.py which is used by the makefile, doesn't support uploading binary files (yet?).
+  But I've successfully used [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader). The only
+  thing to know is that after uploading a file, you need to file.rename() it to add the http/ prefix.
 
-## A note on memory usage.
+## Notes on memory usage.
 
-   The chip is very, very memory constrained. If you find yourself having trouble running the server or anything beyond the most trivial scripts,
-   then try some of the following:
+   The chip is very, very memory constrained. You must use a recent build of nodemcu-firmware that supports
+   node.compile() since the server expects the helper scripts to be compiled.
 
-   * Use a recent build of nodemcu-firmware that supports node.compile().
-     Compiled Lua code has extension .lc and has smaller memory footprint.
-     After uploading the server code (httpserver.lua) but before running anything,
-     type:
-
-         node.compile("httpserver.lua")
-
-   * If you can't even compile the server code, then you may need a build of the firmware without
-     floating point. In file nodemcu-firmware/app/lua/luaconf.h right around line 572 (line number
+   * If you can't compile the server code without error even after a fresh restart, then you may need a build
+     of the firmware without floating point. In file nodemcu-firmware/app/lua/luaconf.h right around line 572 (line number
      may change in the future) add
 
          #define LUA_NUMBER_INTEGRAL
 
-     Then rebuild and re-flash the firmware. But if you **must** have floating point numbers and
-     run this server code, you may be out of luck.
+     Then rebuild and re-flash the firmware.
 
    * Any help reducing the memory needs of the server without crippling its features are appreciated!
