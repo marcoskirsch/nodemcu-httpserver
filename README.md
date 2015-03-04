@@ -67,6 +67,54 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
    Look at the included example scripts for more ideas.
 
+### Example: Garage door opener
+
+#### Purpose
+
+   This is a bundled example that shows how to use nodemcu-httpserver
+   together with server-side scripting to control something with the
+   ESP8266. In this example, we will pretend to open a garage door.
+   This is a very simple example that doesn't even use arguments passed
+   in the request (see example args.lua for that).
+
+   Your typical [garage door opener](http://en.wikipedia.org/wiki/Garage_door_opener)
+   has a wired remote with a single button. The button simply connects to
+   two terminals on the electric motor and when pushed, the terminals are
+   shorted. This causes the motor to open or close.
+
+#### Hardware description
+
+   This example assumes that GPIO2 on the ESP8266 is connected to a relay
+   that can be controlled. How to wire such thing is outside of the scope
+   of this document [but information is easily found online]
+   (https://www.google.com/search?q=opening+a+garage+door+with+a+microcontroller).
+   The relay is controlled by the microcontroller and acts as the button,
+   and can actually be connected in parallel with the existing mechanical button.
+
+#### Software description
+
+   This example consists of the following files:
+
+   * **garage_door_opener.html**: Static HTML displays a button with a link
+   to the garage_door_opener.lua script. That's it!
+   * **garage_door_opener.css**: Provides styling for garage_door_opener.html
+   just so it looks pretty.
+   * **garage_door_opener.lua**: Does the actual work. The script first sends
+   a little javascript snippet to redirect the client back to garage_door_opener.html
+   and then toggles the GPIO2 line for a short amount of time (roughly equivalent to
+   the typical button press for opening a garage door) and then toggles it back.
+   * **apple-touch-icon.png**: This is optional. Provides an icon that
+   will be used if you "Add to Home Screen" the demo. Now it looks like an app!`
+
+#### Security implications
+
+   Be careful permanently installing something like this in your home. The
+   scripts use no authentication and no encryption. Your only layer of
+   security is your wifi network and anyone with access to it could open
+   or close your garage, enter your home, and steal your flatscreen TV.
+
+   This script is provided simply as an educational example and you should
+   treat accordingly.
 
 ## Not supported
 
