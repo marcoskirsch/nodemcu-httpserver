@@ -6,6 +6,25 @@ print('chip: ',node.chipid())
 print('heap: ',node.heap())
 wifi.sta.config("Internet","")
 
+-- Compile server code and remove original .lua files.
+-- This only happens the first time afer the .lua files are uploaded.
+
+local compileAndRemoveIfNeeded = function(f)
+   if file.open(f) then
+      file.close()
+      node.compile(f)
+      file.remove(f)
+   end
+end
+
+local serverFiles = {'httpserver.lua', 'httpserver-static.lua', 'httpserver-error.lua'}
+for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
+
+compileAndRemoveIfNeeded = nil
+serverFiles = nil
+
+-- Connect to the WiFi access point. Once the device is connected,
+-- you may start the HTTP server.
 tmr.alarm(0, 3000, 1, function()
    if wifi.sta.getip() == nil then
       print("Connecting to AP...")
