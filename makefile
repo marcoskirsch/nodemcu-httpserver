@@ -1,9 +1,9 @@
-
 ######################################################################
 # User configuration
 ######################################################################
-# Path to the tool and serial port
-LUATOOL=../luatool/luatool/luatool.py
+# Path to nodemcu-uploader (https://github.com/kmpm/nodemcu-uploader)
+NODEMCU-UPLOADER=../nodemcu-uploader/nodemcu-uploader.py
+# Serial port
 PORT=/dev/cu.usbserial-A602HRAZ
 
 ######################################################################
@@ -14,18 +14,19 @@ LUA_FILES := init.lua httpserver.lua httpserver-static.lua httpserver-error.lua
 
 # Print usage
 usage:
-	@echo "make upload_http      to upload http files only"
-	@echo "make upload_server    to upload server files and init.lua
+	@echo "make upload_http      to upload files to be served"
+	@echo "make upload_server    to upload the server code and init.lua"
 	@echo "make upload           to upload all"
 
 # Upload HTTP files only
 upload_http: $(HTTP_FILES)
-	$(foreach f, $^, $(LUATOOL) -f $(f) -t $(f) -p $(PORT);)
+	@$(NODEMCU-UPLOADER) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
 
 # Upload httpserver lua files (init and server module)
 upload_server: $(LUA_FILES)
-	$(foreach f, $^, $(LUATOOL) -f $(f) -t $(f) -p $(PORT);)
+	@$(NODEMCU-UPLOADER) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
 
 # Upload all
-upload: upload_server upload_http
+upload: $(LUA_FILES) $(HTTP_FILES)
+	@$(NODEMCU-UPLOADER) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
 
