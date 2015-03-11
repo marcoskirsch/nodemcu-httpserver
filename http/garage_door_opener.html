@@ -6,14 +6,60 @@
       <meta charset="UTF-8">
       <title>Garage Remote</title>
    </head>
+   <script>
+      var xmlHttp = null;
+
+      function pushTheButton(door)
+      {
+         var url = "/garage_door_opener.lua?door=" + door;
+
+         xmlHttp = new XMLHttpRequest();
+         xmlHttp.onreadystatechange = processRequest;
+         xmlHttp.open("GET", url, true);
+         xmlHttp.send( null );
+      }
+
+      function processRequest()
+      {
+         if(xmlHttp.readyState == 0)
+         {
+            document.getElementById('label').innerHTML = 'Initalizing...';
+         }
+         else if(xmlHttp.readyState == 1)
+         {
+            document.getElementById('label').innerHTML = 'Server connection established.';
+         }
+         else if(xmlHttp.readyState == 2)
+         {
+            document.getElementById('label').innerHTML = 'Request received.';
+         }
+         else if(xmlHttp.readyState == 3)
+         {
+            document.getElementById('label').innerHTML = 'Processing request.';
+         }
+         else if(xmlHttp.readyState == 4)
+         {
+            if(xmlHttp.status == 200)
+            {
+               document.getElementById('label').innerHTML = xmlHttp.responseText;
+            }
+            else if(xmlHttp.status == 400)
+            {
+               document.getElementById('label').innerHTML = 'Bad request.';
+            }
+         }
+      }
+   </script>
    <body bgcolor="#777777">
       <link href='http://fonts.googleapis.com/css?family=Khand:700' rel='stylesheet' type='text/css'>
-      <a href="garage_door_opener.lua?door=1" class="button">
+      <a href="#" onclick="pushTheButton(1); " class="button"">
           <span>Door 1</span>
       </a>
-      <a href="garage_door_opener.lua?door=2" class="button">
+      <a href="#" onclick="pushTheButton(2); " class="button"">
           <span>Door 2</span>
       </a>
+      <div id="label">Text goes here</div>
+      <img src="delorean.jpg">
    </body>
 </html>
 
