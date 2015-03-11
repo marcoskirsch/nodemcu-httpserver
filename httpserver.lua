@@ -54,65 +54,75 @@ local function parseUri(uri)
    return r
 end
 
--- This variable holds the thread used for sending data back to the user.
--- We do it in a separate thread because we need to yield when sending lots
--- of data in order to avoid overflowing the mcu's buffer.
-local connectionThread
-
-local function onGet(connection, uri)
-   local uri = parseUri(uri)
-   local fileExists = file.open(uri.file, "r")
-   file.close()
-   local fileServeFunction = nil
-   if not fileExists then
-      uri.args['code'] = 404
-      fileServeFunction = dofile("httpserver-error.lc")
-   elseif uri.isScript then
-      collectgarbage()
-      fileServeFunction = dofile(uri.file)
-   else
-      uri.args['file'] = uri.file
-      uri.args['ext'] = uri.ext
-      fileServeFunction = dofile("httpserver-static.lc")
-   end
-   connectionThread = coroutine.create(fileServeFunction)
-   coroutine.resume(connectionThread, connection, uri.args)
-end
-
-local function onReceive(connection, payload)
-   --print(payload) -- for debugging
-   -- parse payload and decide what to serve.
-   local req = parseRequest(payload)
-   print("Requested URI: " .. req.uri)
-   req.method = validateMethod(req.method)
-   if req.method == "GET" then onGet(connection, req.uri)
-   elseif req.method == nil then dofile("httpserver-static.lc")(conection, {code=400})
-   else dofile("httpserver-static.lc")(conection, {code=501}) end
-end
-
-local function onSent(connection, payload)
-   if coroutine.status(connectionThread) == "dead" then
-      -- We're done sending file.
-      connection:close()
-      connectionThread = nil
-   elseif coroutine.status(connectionThread) == "suspended" then
-      -- Not finished sending file, resume.
-      coroutine.resume(connectionThread)
-   else
-      print ("Fatal error! I did not expect to hit this codepath")
-      connection:close()
-   end
-end
-
-local function handleRequest(connection)
-   connection:on("receive", onReceive)
-   connection:on("sent", onSent)
-end
-
 -- Starts web server in the specified port.
 return function (port)
+
    local s = net.createServer(net.TCP, 10) -- 10 seconds client timeout
-   s:listen(port, handleRequest)
+   s:listen(
+      port,
+      function (connection)
+
+         -- This variable holds the thread used for sending data back to the user.
+         -- We do it in a separate thread because we need to yield when sending lots
+         -- of data in order to avoid overflowing the mcu's buffer.
+         local connectionThread
+
+         local function onGet(connection, uri)
+            local uri = parseUri(uri)
+            local fileExists = file.open(uri.file, "r")
+            file.close()
+            local fileServeFunction = nil
+            if not fileExists then
+               uri.args['code'] = 404
+               fileServeFunction = dofile("httpserver-error.lc")
+            elseif uri.isScript then
+               collectgarbage()
+               fileServeFunction = dofile(uri.file)
+            else
+               uri.args['file'] = uri.file
+               uri.args['ext'] = uri.ext
+               fileServeFunction = dofile("httpserver-static.lc")
+            end
+            connectionThread = coroutine.create(fileServeFunction)
+            --print("Thread created", connectionThread)
+            coroutine.resume(connectionThread, connection, uri.args)
+         end
+
+         local function onReceive(connection, payload)
+            --print(payload) -- for debugging
+            -- parse payload and decide what to serve.
+            local req = parseRequest(payload)
+            print("Requested URI: " .. req.uri)
+            req.method = validateMethod(req.method)
+            if req.method == "GET" then onGet(connection, req.uri)
+            elseif req.method == nil then dofile("httpserver-static.lc")(conection, {code=400})
+            else dofile("httpserver-static.lc")(conection, {code=501}) end
+         end
+
+         local function onSent(connection, payload)
+            local connectionThreadStatus = coroutine.status(connectionThread)
+            --print (connectionThread, "status is", connectionThreadStatus)
+            if connectionThreadStatus == "dead" then
+               -- We're done sending file.
+               --print("Done sending file", connectionThread)
+               connection:close()
+               connectionThread = nil
+            elseif connectionThreadStatus == "suspended" then
+               -- Not finished sending file, resume.
+               --print("Resume thread", connectionThread)
+               coroutine.resume(connectionThread)
+            else
+               print ("Fatal error! I did not expect to hit this codepath")
+               connection:close()
+            end
+         end
+
+         connection:on("receive", onReceive)
+         connection:on("sent", onSent)
+
+      end
+   )
    print("nodemcu-httpserver running at http://" .. wifi.sta.getip() .. ":" ..  port)
    return s
+
 end
