@@ -14,14 +14,25 @@ end
 
 return function (connection, args)
    sendHeader(connection, 200, "OK", getMimeType(args.ext))
-   file.open(args.file)
+   print("Begin sending:", args.file)
    -- Send file in little chunks
-   while true do
-      local chunk = file.read(1024)
-      if chunk == nil then break end
-      coroutine.yield()
-      connection:send(chunk)
+   local continue = true
+   local bytesSent = 0
+   while continue do
+      file.open(args.file)
+      file.seek("set", bytesSent)
+      local chunk = file.read(512)
+      file.close()
+      if chunk == nil then
+         continue = false
+      else
+         if #chunk == 512 then
+            coroutine.yield()
+         end
+         connection:send(chunk)
+         bytesSent = bytesSent + #chunk
+         print("Sent" .. args.file, bytesSent)
+      end
    end
    print("Finished sending:", args.file)
-   file.close()
 end
