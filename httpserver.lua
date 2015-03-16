@@ -69,19 +69,25 @@ return function (port)
 
          local function onGet(connection, uri)
             local uri = parseUri(uri)
-            local fileExists = file.open(uri.file, "r")
-            file.close()
             local fileServeFunction = nil
-            if not fileExists then
-               uri.args['code'] = 404
+            if #(uri.file) > 32 then
+               -- nodemcu-firmware cannot handle long filenames.
+               uri.args['code'] = 400
                fileServeFunction = dofile("httpserver-error.lc")
-            elseif uri.isScript then
-               collectgarbage()
-               fileServeFunction = dofile(uri.file)
             else
-               uri.args['file'] = uri.file
-               uri.args['ext'] = uri.ext
-               fileServeFunction = dofile("httpserver-static.lc")
+               local fileExists = file.open(uri.file, "r")
+               file.close()
+               if not fileExists then
+                  uri.args['code'] = 404
+                  fileServeFunction = dofile("httpserver-error.lc")
+               elseif uri.isScript then
+                  collectgarbage()
+                  fileServeFunction = dofile(uri.file)
+               else
+                  uri.args['file'] = uri.file
+                  uri.args['ext'] = uri.ext
+                  fileServeFunction = dofile("httpserver-static.lc")
+               end
             end
             connectionThread = coroutine.create(fileServeFunction)
             --print("Thread created", connectionThread)
@@ -101,19 +107,16 @@ return function (port)
 
          local function onSent(connection, payload)
             local connectionThreadStatus = coroutine.status(connectionThread)
-            --print (connectionThread, "status is", connectionThreadStatus)
-            if connectionThreadStatus == "dead" then
+            -- print (connectionThread, "status is", connectionThreadStatus)
+            if connectionThreadStatus == "suspended" then
+               -- Not finished sending file, resume.
+               -- print("Resume thread", connectionThread)
+               coroutine.resume(connectionThread)
+            elseif connectionThreadStatus == "dead" then
                -- We're done sending file.
-               --print("Done sending file", connectionThread)
+               -- print("Done thread", connectionThread)
                connection:close()
                connectionThread = nil
-            elseif connectionThreadStatus == "suspended" then
-               -- Not finished sending file, resume.
-               --print("Resume thread", connectionThread)
-               coroutine.resume(connectionThread)
-            else
-               print ("Fatal error! I did not expect to hit this codepath")
-               connection:close()
             end
          end
 
