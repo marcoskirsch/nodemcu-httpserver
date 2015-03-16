@@ -14,11 +14,14 @@ end
 
 return function (connection, args)
    sendHeader(connection, 200, "OK", getMimeType(args.ext))
-   print("Begin sending:", args.file)
+   --print("Begin sending:", args.file)
    -- Send file in little chunks
    local continue = true
    local bytesSent = 0
    while continue do
+      -- NodeMCU file API lets you open 1 file at a time.
+      -- So we need to open, seek, close each time in order
+      -- to support multiple simultaneous clients.
       file.open(args.file)
       file.seek("set", bytesSent)
       local chunk = file.read(512)
@@ -26,13 +29,11 @@ return function (connection, args)
       if chunk == nil then
          continue = false
       else
-         if #chunk == 512 then
-            coroutine.yield()
-         end
+         coroutine.yield()
          connection:send(chunk)
          bytesSent = bytesSent + #chunk
-         print("Sent" .. args.file, bytesSent)
+         --print("Sent" .. args.file, bytesSent)
       end
    end
-   print("Finished sending:", args.file)
+   --print("Finished sending:", args.file)
 end
