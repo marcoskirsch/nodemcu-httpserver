@@ -17,7 +17,7 @@ local function parseRequest(request)
    if not e then return nil end
    local line = request:sub(1, e - 1)
    local r = {}
-   _, i, r.method, r.uri = line:find("^([A-Z]+) (.-) HTTP/[1-9]+.[1-9]+$")
+   _, i, r.method, r.uri = line:find("^([A-Z]+) (.-) HTTP/[1-9]+.[0-9]+$")
    return r
 end
 
