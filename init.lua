@@ -4,7 +4,7 @@ print('set mode=STATION (mode='..wifi.getmode()..')')
 print('MAC: ',wifi.sta.getmac())
 print('chip: ',node.chipid())
 print('heap: ',node.heap())
-wifi.sta.config("Kirsch Extreme","1151511515")
+wifi.sta.config("Internet","")
 
 -- Compile server code and remove original .lua files.
 -- This only happens the first time afer the .lua files are uploaded.
