@@ -23,43 +23,62 @@
       {
          if(xmlHttp.readyState == 0)
          {
-            document.getElementById('label').innerHTML = 'Initalizing...';
+            document.getElementById("label").innerHTML = 'Initalizing...';
+            document.getElementById("label").className = "initalizing";
          }
          else if(xmlHttp.readyState == 1)
          {
-            document.getElementById('label').innerHTML = 'Server connection established.';
+            document.getElementById("label").innerHTML = 'Server connection established.';
+            document.getElementById("label").className = "connection";
          }
          else if(xmlHttp.readyState == 2)
          {
-            document.getElementById('label').innerHTML = 'Request received.';
+            document.getElementById("label").innerHTML = 'Request received.';
+            document.getElementById("label").className = "received";
          }
          else if(xmlHttp.readyState == 3)
          {
-            document.getElementById('label').innerHTML = 'Processing request.';
+            document.getElementById("label").innerHTML = 'Processing request.';
+            document.getElementById("label").className = "processing";
          }
          else if(xmlHttp.readyState == 4)
          {
             if(xmlHttp.status == 200)
             {
-               document.getElementById('label').innerHTML = xmlHttp.responseText;
+               document.getElementById("label").innerHTML = xmlHttp.responseText;
+               document.getElementById("label").className = "ok";
+               sleep(300);
+               document.getElementById("label").className = "start";
             }
             else if(xmlHttp.status == 400)
             {
-               document.getElementById('label').innerHTML = 'Bad request.';
+               document.getElementById("label").innerHTML = 'Bad request.';
+               document.getElementById("label").className = "bad";
+            }
+         }
+      }
+      function sleep(milliseconds){
+         var start = new Date().getTime();
+         for (var i = 0; i < 1e7; i++)
+         {
+            if ((new Date().getTime() - start) > milliseconds)
+            {
+               break;
             }
          }
       }
    </script>
    <body bgcolor="#777777">
-      <link href='http://fonts.googleapis.com/css?family=Khand:700' rel='stylesheet' type='text/css'>
-      <a href="#" onclick="pushTheButton(1); " class="button"">
-          <span>Door 1</span>
+   <div id="remote">
+      <div id="label" class="start"></div>
+      <a href="#" onclick="pushTheButton(1);" class="button button-1">
+          <span>I</span>
       </a>
-      <a href="#" onclick="pushTheButton(2); " class="button"">
-          <span>Door 2</span>
+      <a href="#" onclick="pushTheButton(2); " class="button button-2">
+          <span>II</span>
       </a>
-      <div id="label">Text goes here</div>
+      <div id="spacer"></div>
+   </div>
    </body>
 </html>
-
 
