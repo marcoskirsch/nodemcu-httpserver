@@ -4,7 +4,7 @@ print('set mode=STATION (mode='..wifi.getmode()..')')
 print('MAC: ',wifi.sta.getmac())
 print('chip: ',node.chipid())
 print('heap: ',node.heap())
-wifi.sta.config("Internet","")
+wifi.sta.config("Kirsch Extreme","1151511515")
 
 -- Compile server code and remove original .lua files.
 -- This only happens the first time afer the .lua files are uploaded.
@@ -17,7 +17,7 @@ local compileAndRemoveIfNeeded = function(f)
    end
 end
 
-local serverFiles = {'httpserver.lua', 'httpserver-static.lua', 'httpserver-error.lua'}
+local serverFiles = {'httpserver.lua', 'httpserver-request.lua', 'httpserver-static.lua', 'httpserver-error.lua'}
 for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
 
 compileAndRemoveIfNeeded = nil
