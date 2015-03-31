@@ -73,7 +73,9 @@ return function (port)
 
       end
    )
-   print("nodemcu-httpserver running at http://" .. wifi.sta.getip() .. ":" ..  port)
+   if wifi.sta.getip() then print("nodemcu-httpserver running at http://" .. wifi.sta.getip() .. ":" ..  port) 
+   else print("nodemcu-httpserver running at http://" .. wifi.ap.getip() .. ":" ..  port) 
+   end
    return s
 
 end
