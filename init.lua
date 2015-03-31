@@ -25,7 +25,7 @@ local compileAndRemoveIfNeeded = function(f)
    end
 end
 
-local serverFiles = {'httpserver.lua', 'httpserver-request.lua', 'httpserver-static.lua', 'httpserver-error.lua'}
+local serverFiles = {'httpserver.lua', 'httpserver-request.lua', 'httpserver-static.lua', 'httpserver-error.lua','http/ual.lua'}
 for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
 
 compileAndRemoveIfNeeded = nil
