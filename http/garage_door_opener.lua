@@ -16,7 +16,7 @@ local function pushTheButton(connection, pin)
    gpio.mode(pin, gpio.INPUT)
 
    -- Send back JSON response.
-   connection:send("HTTP/1.0 200 OK\r\nContent-Type: application/json\r\Cache-Control: private, no-store\r\n\r\n")
+   connection:send("HTTP/1.0 200 OK\r\nContent-Type: application/json\r\nCache-Control: private, no-store\r\n\r\n")
    connection:send('{"error":0, "message":"OK"}')
 
 end
@@ -26,7 +26,7 @@ return function (connection, args)
    if     args.door == "1" then pushTheButton(connection, 3)   -- GPIO0
    elseif args.door == "2" then pushTheButton(connection, 4)   -- GPIO2
    else
-      connection:send("HTTP/1.0 400 OK\r\nContent-Type: application/json\r\Cache-Control: private, no-store\r\n\r\n")
+      connection:send("HTTP/1.0 400 OK\r\nContent-Type: application/json\r\nCache-Control: private, no-store\r\n\r\n")
       connection:send('{"error":-1, "message":"Bad door"}')
    end
 end
