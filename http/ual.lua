@@ -1,11 +1,10 @@
 local function storelist(table)
       file.remove("http/aplist.json")
       file.open("http/aplist.json","w")
+      coroutine.yield()
       file.write(cjson.encode(table))
       file.close()
       print(cjson.encode(table))
-      coroutine.yield()
-    table = nil
 end
 
 
