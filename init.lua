@@ -1,13 +1,16 @@
--- Tel--l the chip to connect to the access point
---wifi.setmode(wifi.STATIONAP)
 wifi.setmode(wifi.STATION)
 print('set (mode='..wifi.getmode()..')')
 print('MAC: ',wifi.sta.getmac())
 print('chip: ',node.chipid())
 print('heap: ',node.heap())
+<<<<<<< HEAD
 
 wifi.sta.config("BT_WiFi", "PlacNinObOj9")
 
+=======
+
+
+>>>>>>> 11d1f96351cea860acc3dc025d0ea72aa7e9c7ee
 cfg={}
 cfg.ssid="ESP-"..node.chipid()
 cfg.pwd="ESP-"..node.chipid()
@@ -33,9 +36,15 @@ serverFiles = nil
 
 -- Connect to the WiFi access point. Once the device is connected,
 -- you may start the HTTP server.
+<<<<<<< HEAD
 
 local joincounter = 0
 
+=======
+
+local joincounter = 0
+
+>>>>>>> 11d1f96351cea860acc3dc025d0ea72aa7e9c7ee
 tmr.alarm(0, 3000, 1, function()
 
    if wifi.sta.getip() == nil and joincounter < 5 then
