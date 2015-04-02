@@ -5,6 +5,7 @@ print('set (mode='..wifi.getmode()..')')
 print('MAC: ',wifi.sta.getmac())
 print('chip: ',node.chipid())
 print('heap: ',node.heap())
+<<<<<<< HEAD
 
 local joincounter = 0
 
@@ -13,6 +14,9 @@ cfg.ssid="ESP-"..node.chipid()
 cfg.pwd="ESP-"..node.chipid()
 wifi.ap.config(cfg)
 cfg = nil
+=======
+wifi.sta.config("Kirsch Extreme","1151511515")
+>>>>>>> parent of 4989410... Update init.lua
 
 -- Compile server code and remove original .lua files.
 -- This only happens the first time afer the .lua files are uploaded.
