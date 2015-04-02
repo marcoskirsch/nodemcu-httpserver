@@ -6,6 +6,7 @@ local function getMimeType(ext)
    local gzip = false
    -- A few MIME types. Keep list short. If you need something that is missing, let's add it.
    local mt = {css = "text/css", gif = "image/gif", html = "text/html", ico = "image/x-icon", jpeg = "image/jpeg", jpg = "image/jpeg", js = "application/javascript", json = "application/json", png = "image/png"}
+   -- add comressed flag if file ends with gz
    if ext:find("gz$") then 
        ext = ext:sub(1, -4)
        gzip = true
