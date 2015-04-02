@@ -5,7 +5,6 @@
 local function getMimeType(ext)
    local gzip = false
    -- A few MIME types. Keep list short. If you need something that is missing, let's add it.
-<<<<<<< HEAD
    local mt = {css = "text/css", gif = "image/gif", html = "text/html", ico = "image/x-icon", jpeg = "image/jpeg", jpg = "image/jpeg", js = "application/javascript", json = "application/json", png = "image/png"}
    if ext:find("gz$") then 
        ext = ext:sub(1, -4)
@@ -13,10 +12,7 @@ local function getMimeType(ext)
    end
    if mt[ext] then contentType = mt[ext] else contentType = "text/plain" end
    return {contentType = contentType, gzip = gzip }
-=======
-   local mt = {css = "text/css", gif = "image/gif", html = "text/html", ico = "image/x-icon", jpeg = "image/jpeg", jpg = "image/jpeg", js = "application/javascript", json="application/json", png = "image/png"}
-   if mt[ext] then return mt[ext] else return "text/plain" end
->>>>>>> 2357415466bb24cba8ee33109146f6a6a2df0282
+
 end
 
 local function sendHeader(connection, code, codeString, mimeType)
