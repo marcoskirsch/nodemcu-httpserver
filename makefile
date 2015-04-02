@@ -5,6 +5,8 @@
 NODEMCU-UPLOADER=../nodemcu-uploader/nodemcu-uploader.py
 # Serial port
 PORT=/dev/cu.usbserial-A602HRAZ
+# Bauds for the serial connection
+SPEED=9600
 
 ######################################################################
 # End of user config
@@ -20,13 +22,13 @@ usage:
 
 # Upload HTTP files only
 upload_http: $(HTTP_FILES)
-	@$(NODEMCU-UPLOADER) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
+	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
 
 # Upload httpserver lua files (init and server module)
 upload_server: $(LUA_FILES)
-	@$(NODEMCU-UPLOADER) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
+	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
 
 # Upload all
 upload: $(LUA_FILES) $(HTTP_FILES)
-	@$(NODEMCU-UPLOADER) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
+	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, -f $(f) -d $(f))
 
