@@ -43,11 +43,7 @@ local function parseUri(uri)
       filename,ext = filename:match("(.+)%.(.+)")
       table.insert(fullExt,1,ext)
    end
-    r.ext = table.concat(fullExt,".")
-
---   _, r.ext = r.file:match("(.+)%.(.+)")
-
-
+   r.ext = table.concat(fullExt,".")
    r.isScript = r.ext == "lua" or r.ext == "lc"
    r.file = uriToFilename(r.file)
    return r

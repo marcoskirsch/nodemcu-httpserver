@@ -7,7 +7,7 @@ print('chip: ',node.chipid())
 print('heap: ',node.heap())
 
 
-cfg={}
+local cfg={}
 cfg.ssid="ESP-"..node.chipid()
 cfg.pwd="ESP-"..node.chipid()
 wifi.ap.config(cfg)
@@ -19,6 +19,7 @@ cfg = nil
 local compileAndRemoveIfNeeded = function(f)
    if file.open(f) then
       file.close()
+      print(f)
       node.compile(f)
       file.remove(f)
    end

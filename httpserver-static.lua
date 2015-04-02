@@ -25,7 +25,6 @@ local function sendHeader(connection, code, codeString, mimeType)
 end
 
 return function (connection, args)
-   --print(args.ext)
    sendHeader(connection, 200, "OK", getMimeType(args.ext))
    --print("Begin sending:", args.file)
    -- Send file in little chunks
