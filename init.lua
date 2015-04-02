@@ -6,7 +6,6 @@ print('MAC: ',wifi.sta.getmac())
 print('chip: ',node.chipid())
 print('heap: ',node.heap())
 
-wifi.sta.config("BT_WiFi", "PlacNinObOj9")
 
 cfg={}
 cfg.ssid="ESP-"..node.chipid()
