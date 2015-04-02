@@ -1,5 +1,9 @@
 local function sendHeader(connection)
+<<<<<<< HEAD
    connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nCache-Control: private, no-store\r\n\r\n")
+=======
+   connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\rCache-Control: private, no-store\r\n\r\n")
+>>>>>>> 2357415466bb24cba8ee33109146f6a6a2df0282
 end
 
 local function sendAttr(connection, attr, val)
