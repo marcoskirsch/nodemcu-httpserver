@@ -8,6 +8,7 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 * Error pages (404 and others)
 * Server-side execution of Lua scripts
 * Query string argument parsing
+* Serving .gz compressed files
 
 ## How to use
 
