@@ -3,13 +3,25 @@
 -- Author: Marcos Kirsch
 
 local function getMimeType(ext)
+   local gzip = false
    -- A few MIME types. Keep list short. If you need something that is missing, let's add it.
-   local mt = {css = "text/css", gif = "image/gif", html = "text/html", ico = "image/x-icon", jpeg = "image/jpeg", jpg = "image/jpeg", js = "application/javascript", json="application/json", png = "image/png"}
-   if mt[ext] then return mt[ext] else return "text/plain" end
+   local mt = {css = "text/css", gif = "image/gif", html = "text/html", ico = "image/x-icon", jpeg = "image/jpeg", jpg = "image/jpeg", js = "application/javascript", json = "application/json", png = "image/png"}
+   -- add comressed flag if file ends with gz
+   if ext:find("%.gz$") then
+       ext = ext:sub(1, -4)
+       gzip = true
+   end
+   if mt[ext] then contentType = mt[ext] else contentType = "text/plain" end
+   return {contentType = contentType, gzip = gzip }
+
 end
 
 local function sendHeader(connection, code, codeString, mimeType)
-   connection:send("HTTP/1.0 " .. code .. " " .. codeString .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType .. "\r\nConnection: close\r\n\r\n")
+   connection:send("HTTP/1.0 " .. code .. " " .. codeString .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType["contentType"] .. "\r\n")
+   if mimeType["gzip"] then
+       connection:send("Content-Encoding: gzip\r\n")
+   end
+   connection:send("Connection: close\r\n\r\n")
 end
 
 return function (connection, args)

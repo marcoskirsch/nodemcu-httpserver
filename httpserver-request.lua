@@ -24,6 +24,10 @@ end
 
 local function parseUri(uri)
    local r = {}
+   local filename
+   local ext
+   local fullExt = {}
+
    if uri == nil then return r end
    if uri == "/" then uri = "/index.html" end
    questionMarkPos, b, c, d, e, f = uri:find("?")
@@ -34,7 +38,12 @@ local function parseUri(uri)
       r.file = uri:sub(1, questionMarkPos - 1)
       r.args = parseArgs(uri:sub(questionMarkPos+1, #uri))
    end
-   _, r.ext = r.file:match("(.+)%.(.+)")
+   filename = r.file
+   while filename:match("%.") do
+      filename,ext = filename:match("(.+)%.(.+)")
+      table.insert(fullExt,1,ext)
+   end
+   r.ext = table.concat(fullExt,".")
    r.isScript = r.ext == "lua" or r.ext == "lc"
    r.file = uriToFilename(r.file)
    return r
