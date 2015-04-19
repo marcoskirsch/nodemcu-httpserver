@@ -23,11 +23,11 @@ return function (port)
             else
                local fileExists = file.open(uri.file, "r")
                file.close()
+               collectgarbage()
                if not fileExists then
                   uri.args['code'] = 404
                   fileServeFunction = dofile("httpserver-error.lc")
                elseif uri.isScript then
-                  collectgarbage()
                   fileServeFunction = dofile(uri.file)
                else
                   uri.args['file'] = uri.file
@@ -45,11 +45,12 @@ return function (port)
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
             print("Requested URI: " .. req.request)
-            if req.methodIsValid then
-               if req.method == "GET" then onGet(connection, req.uri)
-               else dofile("httpserver-static.lc")(conection, {code=501}) end
+            if req.methodIsValid and req.method == "GET" then
+               onGet(connection, req.uri)
             else
-               dofile("httpserver-static.lc")(conection, {code=400})
+               local args = {}
+               if req.methodIsValid then args['code'] = 501 else args['code'] = 400 end
+               dofile("httpserver-error.lc")(connection, args)
             end
          end
 
@@ -73,9 +74,9 @@ return function (port)
 
       end
    )
-   if wifi.sta.getip() then print("nodemcu-httpserver running at http://" .. wifi.sta.getip() .. ":" ..  port) 
-   else print("nodemcu-httpserver running at http://" .. wifi.ap.getip() .. ":" ..  port) 
-   end
+   local ip = nil
+   if wifi.sta.getip() then ip = wifi.sta.getip() else ip = wifi.ap.getip() end
+   print("nodemcu-httpserver running at http://" .. ip .. ":" ..  port)
    return s
 
 end
