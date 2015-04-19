@@ -14,8 +14,8 @@ local function sendHeader(connection, code, codeString, mimeType)
 end
 
 return function (connection, args)
-   errorString = getHTTPStatusString(args.code)
-   print("Error: " .. args.code .. ": " .. errorString)
+   local errorString = getHTTPStatusString(args.code)
+   print("Error " .. args.code .. ": " .. errorString)
    sendHeader(connection, args.code, errorString, "text/html")
    connection:send("<html><head><title>" .. args.code .. " - " .. errorString .. "</title></head><body><h1>" .. args.code .. " - " .. errorString .. "</h1></body></html>\r\n")
 end
