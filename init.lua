@@ -1,17 +1,34 @@
--- Tel--l the chip to connect to the access point
---wifi.setmode(wifi.STATIONAP)
-wifi.setmode(wifi.STATION)
+-- Begin WiFi configuration
+
+local wifiConfig = {}
+
+-- wifi.STATION         -- station: join a WiFi network
+-- wifi.AP              -- access point: create a WiFi network
+-- wifi.wifi.STATIONAP  -- both station and access point
+wifiConfig.mode = wifi.STATIONAP  -- both station and access point
+
+wifiConfig.accessPointConfig = {}
+wifiConfig.accessPointConfig.ssid = "ESP-"..node.chipid()   -- Name of the SSID you want to create
+wifiConfig.accessPointConfig.pwd = "ESP-"..node.chipid()    -- WiFi password - at least 8 characters
+
+wifiConfig.stationPointConfig = {}
+wifiConfig.stationPointConfig.ssid = "Internet"    -- Name of the WiFi network you want to join
+wifiConfig.stationPointConfig.pwd =  ""            -- Password for the WiFi network
+
+-- Tell the chip to connect to the access point
+
+wifi.setmode(wifiConfig.mode)
 print('set (mode='..wifi.getmode()..')')
 print('MAC: ',wifi.sta.getmac())
 print('chip: ',node.chipid())
 print('heap: ',node.heap())
 
+wifi.ap.config(wifiConfig.accessPointConfig)
+wifi.sta.config(wifiConfig.stationPointConfig.ssid, wifiConfig.stationPointConfig.pwd)
+wifiConfig = nil
+collectgarbage()
 
-local cfg={}
-cfg.ssid="ESP-"..node.chipid()
-cfg.pwd="ESP-"..node.chipid()
-wifi.ap.config(cfg)
-cfg = nil
+-- End WiFi configuration
 
 -- Compile server code and remove original .lua files.
 -- This only happens the first time afer the .lua files are uploaded.
@@ -19,9 +36,10 @@ cfg = nil
 local compileAndRemoveIfNeeded = function(f)
    if file.open(f) then
       file.close()
-      print(f)
+      print('Compiling:', f)
       node.compile(f)
       file.remove(f)
+      collectgarbage()
    end
 end
 
@@ -30,24 +48,29 @@ for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
 
 compileAndRemoveIfNeeded = nil
 serverFiles = nil
+collectgarbage()
 
--- Connect to the WiFi access point. Once the device is connected,
--- you may start the HTTP server.
+-- Connect to the WiFi access point.
+-- Once the device is connected, you may start the HTTP server.
 
-local joincounter = 0
-
+local joinCounter = 0
+local joinMaxAttempts = 5
 tmr.alarm(0, 3000, 1, function()
-
-   if wifi.sta.getip() == nil and joincounter < 5 then
-      print("Connecting to AP...")
-      joincounter = joincounter +1
-   else 
+   if wifi.sta.getip() == nil and joinCounter < joinMaxAttempts then
+      print('Connecting to WiFi Access Point ...')
+      joinCounter = joinCounter +1
+   else
+      if joinCounter == joinMaxAttempts then
+         print('Faild to connect to WiFi Access Point.')
+      else
+         print('IP: ',wifi.sta.getip())
+         -- Uncomment to automatically start the server in port 80
+         --dofile("httpserver.lc")(80)
+      end
       tmr.stop(0)
-      -- print('IP: ',wifi.sta.getip())
-      -- Uncomment to automatically start the server in port 80
-      joincounter = nil
+      joinCounter = nil
+      joinMaxAttempts = nil
       collectgarbage()
-      dofile("httpserver.lc")(80)
    end
 
 end)
