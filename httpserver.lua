@@ -15,32 +15,31 @@ return function (port)
          local connectionThread
 
          local function onGet(connection, uri)
+            collectgarbage()
             local fileServeFunction = nil
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
-               uri.args['code'] = 400
+               uri.args = {code = 400, errorString = "Bad Request"}
                fileServeFunction = dofile("httpserver-error.lc")
             else
                local fileExists = file.open(uri.file, "r")
                file.close()
-               collectgarbage()
                if not fileExists then
-                  uri.args['code'] = 404
+                  uri.args = {code = 404, errorString = "Not Found"}
                   fileServeFunction = dofile("httpserver-error.lc")
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
                else
-                  uri.args['file'] = uri.file
-                  uri.args['ext'] = uri.ext
+                  uri.args = {file = uri.file, ext = uri.ext}
                   fileServeFunction = dofile("httpserver-static.lc")
                end
             end
             connectionThread = coroutine.create(fileServeFunction)
-            --print("Thread created", connectionThread)
             coroutine.resume(connectionThread, connection, uri.args)
          end
 
          local function onReceive(connection, payload)
+            collectgarbage()
             -- print(payload) -- for debugging
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
@@ -49,23 +48,29 @@ return function (port)
                onGet(connection, req.uri)
             else
                local args = {}
-               if req.methodIsValid then args['code'] = 501 else args['code'] = 400 end
-               dofile("httpserver-error.lc")(connection, args)
+               local fileServeFunction = dofile("httpserver-error.lc")
+               if req.methodIsValid then
+                  args = {code = 501, errorString = "Not Implemented"}
+               else
+                  args = {code = 400, errorString = "Bad Request"}
+               end
+               connectionThread = coroutine.create(fileServeFunction)
+               coroutine.resume(connectionThread, connection, args)
             end
          end
 
          local function onSent(connection, payload)
-            local connectionThreadStatus = coroutine.status(connectionThread)
-            -- print (connectionThread, "status is", connectionThreadStatus)
-            if connectionThreadStatus == "suspended" then
-               -- Not finished sending file, resume.
-               -- print("Resume thread", connectionThread)
-               coroutine.resume(connectionThread)
-            elseif connectionThreadStatus == "dead" then
-               -- We're done sending file.
-               -- print("Done thread", connectionThread)
-               connection:close()
-               connectionThread = nil
+            collectgarbage()
+            if connectionThread then
+               local connectionThreadStatus = coroutine.status(connectionThread)
+               if connectionThreadStatus == "suspended" then
+                  -- Not finished sending file, resume.
+                  coroutine.resume(connectionThread)
+               elseif connectionThreadStatus == "dead" then
+                  -- We're done sending file.
+                  connection:close()
+                  connectionThread = nil
+               end
             end
          end
 
