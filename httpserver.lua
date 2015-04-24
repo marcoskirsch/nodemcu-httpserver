@@ -79,8 +79,9 @@ return function (port)
 
       end
    )
-   local ip = nil
-   if wifi.sta.getip() then ip = wifi.sta.getip() else ip = wifi.ap.getip() end
+   -- false and nil evaluate as false
+   local ip = wifi.sta.getip() 
+   if not ip then ip = wifi.ap.getip() end
    print("nodemcu-httpserver running at http://" .. ip .. ":" ..  port)
    return s
 
