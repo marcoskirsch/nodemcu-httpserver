@@ -4,7 +4,8 @@
 
 local function validateMethod(method)
    local httpMethods = {GET=true, HEAD=true, POST=true, PUT=true, DELETE=true, TRACE=true, OPTIONS=true, CONNECT=true, PATCH=true}
-   if httpMethods[method] then return true else return false end
+   -- default for non-existent attributes returns nil, which evaluates to false
+   return httpMethods[method]
 end
 
 local function uriToFilename(uri)
