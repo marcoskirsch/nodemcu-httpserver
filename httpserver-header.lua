@@ -5,11 +5,9 @@
 return function (connection, code, extension)
 
    local function getHTTPStatusString(code)
-      if code == 200 then return "OK" end
-      if code == 404 then return "Not Found" end
-      if code == 400 then return "Bad Request" end
-      if code == 501 then return "Not Implemented" end
-      return "Unknown HTTP status"
+      local codez = {200="OK", 400="Bad Request", 404="Not Found", 501="Not Implemented"}
+      local myResult = codez[code]
+      if myResult then return myResult else return "Unknown HTTP Status" end
    end
 
    local function getMimeType(ext)
