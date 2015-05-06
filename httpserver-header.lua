@@ -5,10 +5,10 @@
 return function (connection, code, extension)
 
    local function getHTTPStatusString(code)
-      local codez = {[200]="OK", [400]="Bad Request", [404]="Not Found", [501]="Not Implemented",}
+      local codez = {[200]="OK", [400]="Bad Request", [404]="Not Found",}
       local myResult = codez[code]
       -- enforce returning valid http codes all the way throughout?
-      if myResult then return {[code]=myResult,} else return {[501]=codez[501],} end
+      if myResult then return {[code]=myResult,} else return {[501]="Not Implemented",} end
    end
 
    local function getMimeType(ext)
