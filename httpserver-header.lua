@@ -7,7 +7,8 @@ return function (connection, code, extension)
    local function getHTTPStatusString(code)
       local codez = {[200]="OK", [400]="Bad Request", [404]="Not Found", [501]="Not Implemented",}
       local myResult = codez[code]
-      if myResult then return myResult else return "Unknown HTTP Status" end
+      -- enforce returning valid http codes all the way throughout?
+      if myResult then return myResult else return codez[501] end
    end
 
    local function getMimeType(ext)
