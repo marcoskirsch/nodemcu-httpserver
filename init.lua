@@ -56,14 +56,15 @@ collectgarbage()
 local joinCounter = 0
 local joinMaxAttempts = 5
 tmr.alarm(0, 3000, 1, function()
-   if wifi.sta.getip() == nil and joinCounter < joinMaxAttempts then
+   local ip = wifi.sta.getip()
+   if ip and joinCounter < joinMaxAttempts then
       print('Connecting to WiFi Access Point ...')
       joinCounter = joinCounter +1
    else
       if joinCounter == joinMaxAttempts then
          print('Faild to connect to WiFi Access Point.')
       else
-         print('IP: ',wifi.sta.getip())
+         print('IP: ',ip)
          -- Uncomment to automatically start the server in port 80
          --dofile("httpserver.lc")(80)
       end
