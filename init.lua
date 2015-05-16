@@ -57,7 +57,7 @@ local joinCounter = 0
 local joinMaxAttempts = 5
 tmr.alarm(0, 3000, 1, function()
    local ip = wifi.sta.getip()
-   if ip and joinCounter < joinMaxAttempts then
+   if ip == nil and joinCounter < joinMaxAttempts then
       print('Connecting to WiFi Access Point ...')
       joinCounter = joinCounter +1
    else
