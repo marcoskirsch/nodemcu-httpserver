@@ -5,12 +5,11 @@ return function (connection, args)
    connection:send('<h1>Server File Listing</h1>')
    connection:send("<ul>\n")
 
-   local l = file.list()
-   for name, size in pairs(l) do
+   for name, size in pairs(file.list()) do
 
       local isHttpFile = string.match(name, "(http/)") ~= nil
-      local url = string.match(name, ".*/(.*)")
       if isHttpFile then
+         local url = string.match(name, ".*/(.*)")
          connection:send('   <li><a href="' .. url .. '">' .. url .. "</a> (" .. size .. " bytes)</li>\n")
          -- this list could be very long, so we'll yield in order to avoid overflowing the send buffer.
          coroutine.yield()
