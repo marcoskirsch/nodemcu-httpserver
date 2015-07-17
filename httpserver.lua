@@ -1,5 +1,7 @@
 -- httpserver
--- Author: Marcos Kirsch
+-- Author: Marcos Skirsch
+
+connectionTable = {}
 
 -- Starts web server in the specified port.
 return function (port)
@@ -9,33 +11,33 @@ return function (port)
       port,
       function (connection)
 
-         -- This variable holds the thread used for sending data back to the user.
-         -- We do it in a separate thread because we need to yield when sending lots
-         -- of data in order to avoid overflowing the mcu's buffer.
-         local connectionThread
-
          local function onGet(connection, uri)
             collectgarbage()
-            local fileServeFunction = nil
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
                uri.args = {code = 400, errorString = "Bad Request"}
-               fileServeFunction = dofile("httpserver-error.lc")
+               dofile("httpserver-error.lc")(connection, uri.args)
+			   connection:close()
             else
                local fileExists = file.open(uri.file, "r")
                file.close()
                if not fileExists then
                   uri.args = {code = 404, errorString = "Not Found"}
-                  fileServeFunction = dofile("httpserver-error.lc")
+                  dofile("httpserver-error.lc")(connection, uri.args)
+			      connection:close()
                elseif uri.isScript then
-                  fileServeFunction = dofile(uri.file)
+                  dofile(uri.file)(connection, uri.args)
+			      connection:close()
                else
                   uri.args = {file = uri.file, ext = uri.ext}
-                  fileServeFunction = dofile("httpserver-static.lc")
+                  connectionTable[connection] = {bytesSent = 0, args = uri.args}
+                  -- print("create: ", connection) -- for debugging
+                  if dofile("httpserver-static.lc")(connection, uri.args, 1) == 0 then
+                     connectionTable[connection] = nil
+                     connection:close()
+                  end
                end
             end
-            connectionThread = coroutine.create(fileServeFunction)
-            coroutine.resume(connectionThread, connection, uri.args)
          end
 
          local function onReceive(connection, payload)
@@ -48,34 +50,33 @@ return function (port)
                onGet(connection, req.uri)
             else
                local args = {}
-               local fileServeFunction = dofile("httpserver-error.lc")
                if req.methodIsValid then
                   args = {code = 501, errorString = "Not Implemented"}
                else
                   args = {code = 400, errorString = "Bad Request"}
                end
-               connectionThread = coroutine.create(fileServeFunction)
-               coroutine.resume(connectionThread, connection, args)
+               dofile("httpserver-error.lc")(connection, args)
+			   connection:close()
             end
          end
 
          local function onSent(connection, payload)
             collectgarbage()
-            if connectionThread then
-               local connectionThreadStatus = coroutine.status(connectionThread)
-               if connectionThreadStatus == "suspended" then
-                  -- Not finished sending file, resume.
-                  coroutine.resume(connectionThread)
-               elseif connectionThreadStatus == "dead" then
-                  -- We're done sending file.
-                  connection:close()
-                  connectionThread = nil
-               end
+			local args = connectionTable[connection].args
+            -- print("sent: ", connection) -- for debugging
+            if dofile("httpserver-static.lc")(connection, args, 0) == 0 then
+               connectionTable[connection] = nil
+               connection:close()
             end
+         end
+
+         local function onDisconnection(connection, payload)
+            connectionTable[connection] = nil
          end
 
          connection:on("receive", onReceive)
          connection:on("sent", onSent)
+         connection:on("disconnection", onDisconnection)
 
       end
    )
