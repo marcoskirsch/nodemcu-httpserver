@@ -62,11 +62,11 @@ tmr.alarm(0, 3000, 1, function()
       joinCounter = joinCounter +1
    else
       if joinCounter == joinMaxAttempts then
-         print('Faild to connect to WiFi Access Point.')
+         print('Failed to connect to WiFi Access Point.')
       else
          print('IP: ',ip)
          -- Uncomment to automatically start the server in port 80
-         dofile("httpserver.lc")(80)
+         --dofile("httpserver.lc")(80)
       end
       tmr.stop(0)
       joinCounter = nil
