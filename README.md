@@ -1,5 +1,5 @@
-# nodemcu-httpserver
-A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
+# (nodemcu-httpserver)[https://github.com/marcoskirsch/nodemcu-httpserver]
+A (very) simple web server written in Lua for the ESP8266 running the NodeMCU firmware.
 
 ## Features
 
@@ -12,11 +12,13 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
 ## How to use
 
-1. Upload server files using [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader) or similar.
-   Or, even better, use GNU Make with the bundled makefile. Type the following to upload
-   server code, init.lua (which you may want to modify), and some example files:
+1. Upload server files using [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader).
+   The easiest is to use GNU Make with the bundled Makefile. Open the Makefile and modify the
+   user configuration to point to your nodemcu-uploader script and your serial port.
+   Type the following to upload the server code, init.lua (which you may want to modify),
+   and some example files:
 
-         make upload
+         make upload_all
 
    If you only want to upload the server code, then type:
 
@@ -31,7 +33,7 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
          dofile("httpserver.lc")(80)
 
-   In this example, 80 is the port your server is listening at but you can change it.
+   In this example, 80 is the port your server is listening at, but you can change it.
 
 2. Want to upload your own files? Move them to the http/ folder. Be careful though,
    the flash memory seems to fill up quickly and get corrupted.
@@ -62,14 +64,14 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
    The _args_ parameter is a Lua table that contains any arguments sent by the client in the GET request.
 
    For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
-   in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color == "red"_.
+   in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color = "red"_.
 
-   If you are going to be sending lots (as in over a KB) of data, you should yield the thread/coroutine every now and then
-   in order to avoid overflowing the buffer in the microcontroller. Use:
+   If you are going to be sending lots (as in over a KB) of data in your script, you should yield the thread/coroutine
+   every now and then in order to avoid overflowing the send buffer in the microcontroller. Use:
 
       coroutine.yield()
 
-   The easiest is to check out the included example scripts for more ideas.
+   Look at the included example scripts for more ideas.
 
 ### Example: Garage door opener
 
@@ -77,9 +79,7 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
    This is a bundled example that shows how to use nodemcu-httpserver
    together with server-side scripting to control something with the
-   ESP8266. In this example, we will pretend to open a garage door.
-   This is a very simple example that doesn't even use arguments passed
-   in the request (see example args.lua for that).
+   ESP8266. In this example, we will pretend to open one of two garage doors.
 
    Your typical [garage door opener](http://en.wikipedia.org/wiki/Garage_door_opener)
    has a wired remote with a single button. The button simply connects to
@@ -88,11 +88,10 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
 #### Hardware description
 
-   This example assumes that GPIO2 on the ESP8266 is connected to a relay
-   that can be controlled. How to wire such thing is outside of the scope
-   of this document [but information is easily found online]
-   (https://www.google.com/search?q=opening+a+garage+door+with+a+microcontroller).
-   The relay is controlled by the microcontroller and acts as the button,
+   This example assumes that GPIO0 and GPIO2 on the ESP8266 are connected each to a relay
+   that can be controlled. How to wire such thing is outside of the scope of this document
+   [but information is easily found online](https://www.google.com/search?q=opening+a+garage+door+with+a+microcontroller).
+   The relays are controlled by the microcontroller and act as the push button,
    and can actually be connected in parallel with the existing mechanical button.
 
 #### Software description
@@ -108,13 +107,13 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
    and then toggles the GPIO2 line for a short amount of time (roughly equivalent to
    the typical button press for opening a garage door) and then toggles it back.
    * **apple-touch-icon.png**: This is optional. Provides an icon that
-   will be used if you "Add to Home Screen" the demo. Now it looks like an app!`
+   will be used if you "Add to Home Screen" the demo on an iPhone. Now it looks like an app!
 
 #### Security implications
 
    Be careful permanently installing something like this in your home. The
    scripts use no authentication and no encryption. Your only layer of
-   security is your wifi network and anyone with access to it could open
+   security is the wifi network and anyone with access to it could open
    or close your garage, enter your home, and steal your flatscreen TV.
 
    This script is provided simply as an educational example and you should
@@ -128,19 +127,17 @@ A (very) simple web server written in Lua for the ESP8266 firmware NodeMCU.
 
 ## Notes on memory usage.
 
-   The chip is very, very memory constrained. You must use a build of nodemcu-firmware recent enough to support
-   node.compile() since the server expects all server scripts to be compiled.
+   The chip is very, very memory constrained.
 
-   * It is recommended you use a firmware build without support for floating point.
-   In the (nodemcu-firmware releases page)[https://github.com/nodemcu/nodemcu-firmware/releases] these would be the ones
-   with the term "integer" in them. If you want to build your own, then edit file nodemcu-firmware/app/lua/luaconf.h right
-   around line 572 (line number may change) by adding
+   * Use nodemcu-firmware dev096 or newer with as few optional modules as possible.
+   Older versions have very little free RAM.
 
-         #define LUA_NUMBER_INTEGRAL
+   * Use a firmware build without floating point support. This takes up a good chunk of RAM as well.
+   In the (nodemcu-firmware releases page)[https://github.com/nodemcu/nodemcu-firmware/releases] these
+   would be the ones with the term "integer" in them. If you are building it yourself then we'll assume
+   you know what you're doing.
 
-     Then rebuild and re-flash the firmware.
+   * Any help reducing the memory needs of the server without crippling its functionality is appreciated!
 
-   * Any help reducing the memory needs of the server without crippling its features are appreciated!
-
-   * You can compile your Lua scripts in order to reduce their memory usage. The server knows to treat
+   * Compile your Lua scripts in order to reduce their memory usage. The server knows to serve and treat
    both .lua and .lc files as scripts.
