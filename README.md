@@ -9,6 +9,7 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 * Server-side execution of Lua scripts
 * Query string argument parsing
 * Serving .gz compressed files
+* HTTP basic authentication
 
 ## How to use
 
@@ -50,6 +51,10 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
    The ESP8266 will serve you with the contents of the file "http/index.html" (if it exists). If you visit the root (/)
    then index.html is served. By the way, unlike most HTTP servers, nodemcu_httpserver treats the URLs in a
    case-sensitive manner.
+
+4. Enable http basic authentication.
+
+   Enable and configure http basic authentication in "httpserver-conf.lua" file.
 
 ## How to create dynamic Lua scripts
 
@@ -122,7 +127,6 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 ## Not supported
 
 * Other methods: HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH
-* HTTP authentication
 * Encryption
 
 ## Notes on memory usage.
