@@ -23,8 +23,8 @@ end
 
 return function (connection, args)
    print('Garage door button was pressed!', args.door)
-   if     args.door == "1" then pushTheButton(connection, 3)   -- GPIO0
-   elseif args.door == "2" then pushTheButton(connection, 4)   -- GPIO2
+   if     args.door == "1" then pushTheButton(connection, 1)   -- GPIO1
+   elseif args.door == "2" then pushTheButton(connection, 2)   -- GPIO2
    else
       connection:send("HTTP/1.0 400 OK\r\nContent-Type: application/json\r\nCache-Control: private, no-store\r\n\r\n")
       connection:send('{"error":-1, "message":"Bad door"}')
