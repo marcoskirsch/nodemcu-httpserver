@@ -12,8 +12,8 @@ wifiConfig.accessPointConfig.ssid = "ESP-"..node.chipid()   -- Name of the SSID 
 wifiConfig.accessPointConfig.pwd = "ESP-"..node.chipid()    -- WiFi password - at least 8 characters
 
 wifiConfig.stationPointConfig = {}
-wifiConfig.stationPointConfig.ssid = "Internet"    -- Name of the WiFi network you want to join
-wifiConfig.stationPointConfig.pwd =  ""            -- Password for the WiFi network
+wifiConfig.stationPointConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
+wifiConfig.stationPointConfig.pwd =  ""                -- Password for the WiFi network
 
 -- Tell the chip to connect to the access point
 
@@ -43,7 +43,7 @@ local compileAndRemoveIfNeeded = function(f)
    end
 end
 
-local serverFiles = {'httpserver.lua', 'httpserver-request.lua', 'httpserver-static.lua', 'httpserver-header.lua', 'httpserver-error.lua'}
+local serverFiles = {'httpserver.lua', 'httpserver-basicauth.lua', 'httpserver-conf.lua', 'b64.lua', 'httpserver-request.lua', 'httpserver-static.lua', 'httpserver-header.lua', 'httpserver-error.lua'}
 for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
 
 compileAndRemoveIfNeeded = nil
@@ -66,7 +66,7 @@ tmr.alarm(0, 3000, 1, function()
       else
          print('IP: ',ip)
          -- Uncomment to automatically start the server in port 80
-         --dofile("httpserver.lc")(80)
+         dofile("httpserver.lc")(80)
       end
       tmr.stop(0)
       joinCounter = nil

@@ -40,16 +40,25 @@ return function (port)
 
          local function onReceive(connection, payload)
             collectgarbage()
-            -- print(payload) -- for debugging
+            local conf = dofile("httpserver-conf.lc")
+            local auth
+            local user = "Anonymous"
+
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
             print("Requested URI: " .. req.request)
-            if req.methodIsValid and req.method == "GET" then
+            if conf.auth.enabled then
+               auth = dofile("httpserver-basicauth.lc")
+               user = auth.authenticate(payload) -- authenticate returns nil on failed auth
+            end
+            if user and req.methodIsValid and req.method == "GET" then
                onGet(connection, req.uri)
             else
                local args = {}
                local fileServeFunction = dofile("httpserver-error.lc")
-               if req.methodIsValid then
+               if not user then
+                  args = {code = 401, errorString = "Not Authorized", headers = {auth.authErrorHeader()}}
+               elseif req.methodIsValid then
                   args = {code = 501, errorString = "Not Implemented"}
                else
                   args = {code = 400, errorString = "Bad Request"}
