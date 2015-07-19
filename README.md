@@ -88,7 +88,7 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 
 #### Hardware description
 
-   This example assumes that GPIO0 and GPIO2 on the ESP8266 are connected each to a relay
+   This example assumes that GPIO1 and GPIO2 on the ESP8266 are connected each to a relay
    that can be controlled. How to wire such thing is outside of the scope of this document
    [but information is easily found online](https://www.google.com/search?q=opening+a+garage+door+with+a+microcontroller).
    The relays are controlled by the microcontroller and act as the push button,
