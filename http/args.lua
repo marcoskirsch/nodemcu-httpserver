@@ -18,8 +18,7 @@ return function (connection, args)
    connection:send('<h2>Received the following values:</h2>')
    connection:send("<ul>\n")
    for name, value in pairs(args) do
-      if value == nil then value = "nil" end
-      connection:send('<li><b>' .. name .. ':</b> ' .. value .. "<br></li>\n")
+      connection:send('<li><b>' .. name .. ':</b> ' .. tostring(value) .. "<br></li>\n")
    end
 
    connection:send("</ul>\n")
