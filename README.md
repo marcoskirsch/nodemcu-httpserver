@@ -9,7 +9,7 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 * Server-side execution of Lua scripts
 * Query string argument parsing
 * Serving .gz compressed files
-* HTTP basic authentication
+* HTTP Basic Authentication
 
 ## How to use
 
@@ -52,9 +52,15 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
    then index.html is served. By the way, unlike most HTTP servers, nodemcu_httpserver treats the URLs in a
    case-sensitive manner.
 
-4. Enable http basic authentication.
+4. How to use HTTP Basic Authentication.
 
-   Enable and configure http basic authentication in "httpserver-conf.lua" file.
+   Enable and configure HTTP Basic Authentication by editing "httpserver-conf.lua" file.
+
+   When enabled, HTTP Basic Authentication is global to every file served by the server.
+
+   Remember that HTTP Basic Authentication is a very basic authentication protocol, and should not be
+   considered secure if the server is not using encryption, as your username and password travel
+   in plain text.
 
 ## How to create dynamic Lua scripts
 
@@ -116,18 +122,18 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 
 #### Security implications
 
-   Be careful permanently installing something like this in your home. The
-   scripts use no authentication and no encryption. Your only layer of
-   security is the wifi network and anyone with access to it could open
-   or close your garage, enter your home, and steal your flatscreen TV.
+   Be careful permanently installing something like this in your home. The server provides
+   no encryption. Your only layer of security is the WiFi network and anyone with access
+   to it could open or close your garage, enter your home, and steal your flatscreen TV.
 
-   This script is provided simply as an educational example and you should
-   treat accordingly.
+   This script is provided simply as an educational example and you should treat accordingly.
 
 ## Not supported
 
 * Other methods: HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH
 * Encryption
+* Multiple users (HTTP Basic Authentication)
+* Only protect certain directories (HTTP Basic Authentication)
 
 ## Notes on memory usage.
 
