@@ -1,4 +1,4 @@
-# (nodemcu-httpserver)[https://github.com/marcoskirsch/nodemcu-httpserver]
+# [nodemcu-httpserver](https://github.com/marcoskirsch/nodemcu-httpserver)
 A (very) simple web server written in Lua for the ESP8266 running the NodeMCU firmware.
 
 ## Features
