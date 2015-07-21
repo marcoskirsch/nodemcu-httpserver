@@ -6,7 +6,7 @@ local conf = {}
 
 -- Basic Authentication Conf
 local auth = {}
-auth.enabled = true
+auth.enabled = false
 auth.realm = "nodemcu-httpserver" -- displayed in the login dialog users get
 auth.user = "user"
 auth.password = "password" -- PLEASE change this
