@@ -23,8 +23,21 @@ return function (port)
                fileServeFunction = dofile("httpserver-error.lc")
             else
                local fileExists = file.open(uri.file, "r")
+               file.close()			   
+            
+			if not fileExists then
+               -- gzip check
+               fileExists = file.open(uri.file .. ".gz", "r")
                file.close()
-               if not fileExists then
+
+               if fileExists then
+                  print("gzip variant exists, serving that one")
+                  uri.file = uri.file .. ".gz"
+                  uri.ext = uri.ext .. ".gz"
+               end
+            end
+			   
+            if not fileExists then
                   uri.args = {code = 404, errorString = "Not Found"}
                   fileServeFunction = dofile("httpserver-error.lc")
                elseif uri.isScript then
