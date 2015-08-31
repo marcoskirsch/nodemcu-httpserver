@@ -44,7 +44,12 @@ local function parseUri(uri)
       filename,ext = filename:match("(.+)%.(.+)")
       table.insert(fullExt,1,ext)
    end
-   r.ext = table.concat(fullExt,".")
+   if #fullExt > 1 and fullExt[#fullExt] == 'gz' then
+      r.ext = fullExt[#fullExt-1]
+      r.isGzipped = true
+   elseif #fullExt >= 1 then
+      r.ext = fullExt[#fullExt]
+   end
    r.isScript = r.ext == "lua" or r.ext == "lc"
    r.file = uriToFilename(r.file)
    return r
