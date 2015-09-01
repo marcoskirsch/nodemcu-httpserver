@@ -3,7 +3,7 @@
 -- Author: Marcos Kirsch
 
 return function (connection, args)
-   dofile("httpserver-header.lc")(connection, 200, args.ext)
+   dofile("httpserver-header.lc")(connection, 200, args.ext, args.gzipped)
    --print("Begin sending:", args.file)
    -- Send file in little chunks
    local continue = true
