@@ -13,42 +13,54 @@ return function (port)
          -- We do it in a separate thread because we need to yield when sending lots
          -- of data in order to avoid overflowing the mcu's buffer.
          local connectionThread
+         
+         local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
 
-         local function onGet(connection, uri)
+         local function onRequest(connection, req)
             collectgarbage()
+            local method = req.method
+            local uri = req.uri
             local fileServeFunction = nil
+            
+            print("Method: " .. method);
+            
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
                uri.args = {code = 400, errorString = "Bad Request"}
                fileServeFunction = dofile("httpserver-error.lc")
             else
                local fileExists = file.open(uri.file, "r")
-               file.close()			   
-            
-			if not fileExists then
-               -- gzip check
-               fileExists = file.open(uri.file .. ".gz", "r")
                file.close()
+            
+               if not fileExists then
+                 -- gzip check
+                 fileExists = file.open(uri.file .. ".gz", "r")
+                 file.close()
 
-               if fileExists then
-                  print("gzip variant exists, serving that one")
-                  uri.file = uri.file .. ".gz"
-                  uri.ext = uri.ext .. ".gz"
+                 if fileExists then
+                    print("gzip variant exists, serving that one")
+                    uri.file = uri.file .. ".gz"
+                    uri.ext = uri.ext .. ".gz"
+                 end
                end
-            end
-			   
-            if not fileExists then
+
+               if not fileExists then
                   uri.args = {code = 404, errorString = "Not Found"}
                   fileServeFunction = dofile("httpserver-error.lc")
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
                else
-                  uri.args = {file = uri.file, ext = uri.ext}
-                  fileServeFunction = dofile("httpserver-static.lc")
+                  if allowStatic[method] then
+                    uri.args = {file = uri.file, ext = uri.ext}
+                    fileServeFunction = dofile("httpserver-static.lc")
+                  else
+                    uri.args = {code = 405, errorString = "Method not supported"}
+                    fileServeFunction = dofile("httpserver-error.lc")
+                  end
                end
             end
             connectionThread = coroutine.create(fileServeFunction)
-            coroutine.resume(connectionThread, connection, uri.args)
+            coroutine.resume(connectionThread, connection, req, uri.args)
          end
 
          local function onReceive(connection, payload)
@@ -64,8 +76,9 @@ return function (port)
                auth = dofile("httpserver-basicauth.lc")
                user = auth.authenticate(payload) -- authenticate returns nil on failed auth
             end
-            if user and req.methodIsValid and req.method == "GET" then
-               onGet(connection, req.uri)
+
+            if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
+               onRequest(connection, req)
             else
                local args = {}
                local fileServeFunction = dofile("httpserver-error.lc")
@@ -77,7 +90,7 @@ return function (port)
                   args = {code = 400, errorString = "Bad Request"}
                end
                connectionThread = coroutine.create(fileServeFunction)
-               coroutine.resume(connectionThread, connection, args)
+               coroutine.resume(connectionThread, connection, req, args)
             end
          end
 

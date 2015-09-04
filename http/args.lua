@@ -1,4 +1,4 @@
-return function (connection, args)
+return function (connection, req, args)
    connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nCache-Control: private, no-store\r\n\r\n")
    connection:send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Arguments</title></head>')
    connection:send('<body>')
