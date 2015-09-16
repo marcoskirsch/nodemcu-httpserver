@@ -40,7 +40,7 @@ return function (port)
                  if fileExists then
                     print("gzip variant exists, serving that one")
                     uri.file = uri.file .. ".gz"
-                    uri.ext = uri.ext .. ".gz"
+                    uri.isGzipped = true
                  end
                end
 
@@ -51,7 +51,7 @@ return function (port)
                   fileServeFunction = dofile(uri.file)
                else
                   if allowStatic[method] then
-                    uri.args = {file = uri.file, ext = uri.ext}
+                    uri.args = {file = uri.file, ext = uri.ext, gzipped = uri.isGzipped}
                     fileServeFunction = dofile("httpserver-static.lc")
                   else
                     uri.args = {code = 405, errorString = "Method not supported"}
