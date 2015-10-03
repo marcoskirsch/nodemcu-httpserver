@@ -89,7 +89,7 @@ if (wifi.getmode() == wifi.STATION) or (wifi.getmode() == wifi.STATIONAP) then
 end
 
 -- Uncomment to automatically start the server in port 80
-if (not not wifi.sta.getip()) or (not not wifi.ap.getip()l) then
+if (not not wifi.sta.getip()) or (not not wifi.ap.getip()) then
     dofile("httpserver.lc")(80)    
 end
 
