@@ -78,11 +78,6 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
    For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
    in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color = "red"_.
 
-   If you are going to be sending lots (as in over a KB) of data in your script, you should yield the thread/coroutine
-   every now and then in order to avoid overflowing the send buffer in the microcontroller. Use:
-
-      coroutine.yield()
-
    Look at the included example scripts for more ideas.
 
 ### Example: Garage door opener
