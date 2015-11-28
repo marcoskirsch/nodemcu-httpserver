@@ -20,21 +20,34 @@ return function (port)
             local bufferedConnection = {}
             connectionThread = coroutine.create(function(fileServeFunction, connection, req, args)
                fileServeFunction(connection, req, args)
-               connection:flush()
+               if not connection:flush() then
+	         connection:close()
+                 connectionThread = nil
+ 	       end
             end)
             function bufferedConnection:flush() 
-              connection:send(table.concat(self.data, ""))
-              self.data = {}
-              self.size = 0    
+              if self.size > 0 then 
+		connection:send(table.concat(self.data, ""))
+                self.data = {}
+                self.size = 0    
+		return true
+	      end
+	      return false
             end
             function bufferedConnection:send(payload) 
               local l = payload:len()
-              if l + self.size > 1400 then
-                 self:flush()
-                 coroutine.yield()          
+              if l + self.size > 1000 then
+                 if self:flush() then
+                   coroutine.yield()          
+		 end
               end
-              table.insert(self.data, payload)
-              self.size = self.size + l
+	      if l > 800 then
+		connection:send(payload)
+		coroutine.yield()
+	      else
+                table.insert(self.data, payload)
+                self.size = self.size + l
+              end
             end
             bufferedConnection.size = 0
             bufferedConnection.data = {}
