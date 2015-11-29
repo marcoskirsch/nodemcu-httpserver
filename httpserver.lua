@@ -18,9 +18,9 @@ return function (port)
 
          local function startServing(fileServeFunction, connection, req, args) 
             local bufferedConnection = {}
-            connectionThread = coroutine.create(function(fileServeFunction, connection, req, args)
-               fileServeFunction(connection, req, args)
-               if not connection:flush() then
+            connectionThread = coroutine.create(function(fileServeFunction, bconnection, req, args)
+               fileServeFunction(bconnection, req, args)
+               if not bconnection:flush() then
 	         connection:close()
                  connectionThread = nil
  	       end
