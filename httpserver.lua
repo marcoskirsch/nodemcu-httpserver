@@ -13,8 +13,49 @@ return function (port)
          -- We do it in a separate thread because we need to yield when sending lots
          -- of data in order to avoid overflowing the mcu's buffer.
          local connectionThread
-         
+        
          local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
+
+         local function startServing(fileServeFunction, connection, req, args) 
+            local bufferedConnection = {}
+            connectionThread = coroutine.create(function(fileServeFunction, bconnection, req, args)
+               fileServeFunction(bconnection, req, args)
+               if not bconnection:flush() then
+	         connection:close()
+                 connectionThread = nil
+ 	       end
+            end)
+            function bufferedConnection:flush() 
+              if self.size > 0 then 
+		connection:send(table.concat(self.data, ""))
+                self.data = {}
+                self.size = 0    
+		return true
+	      end
+	      return false
+            end
+            function bufferedConnection:send(payload) 
+              local l = payload:len()
+              if l + self.size > 1000 then
+                 if self:flush() then
+                   coroutine.yield()          
+		 end
+              end
+	      if l > 800 then
+		connection:send(payload)
+		coroutine.yield()
+	      else
+                table.insert(self.data, payload)
+                self.size = self.size + l
+              end
+            end
+            bufferedConnection.size = 0
+            bufferedConnection.data = {}
+            local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
+            if not status then
+               print(err)
+            end
+         end
 
          local function onRequest(connection, req)
             collectgarbage()
@@ -59,8 +100,7 @@ return function (port)
                   end
                end
             end
-            connectionThread = coroutine.create(fileServeFunction)
-            coroutine.resume(connectionThread, connection, req, uri.args)
+            startServing(fileServeFunction, connection, req, uri.args)
          end
 
          local function onReceive(connection, payload)
@@ -89,18 +129,20 @@ return function (port)
                else
                   args = {code = 400, errorString = "Bad Request"}
                end
-               connectionThread = coroutine.create(fileServeFunction)
-               coroutine.resume(connectionThread, connection, req, args)
+               startServing(fileServeFunction, connection, req, args)
             end
          end
 
          local function onSent(connection, payload)
             collectgarbage()
             if connectionThread then
-               local connectionThreadStatus = coroutine.status(connectionThread)
+               local connectionThreadStatus = coroutine.status(connectionThread) 
                if connectionThreadStatus == "suspended" then
                   -- Not finished sending file, resume.
-                  coroutine.resume(connectionThread)
+                  local status, err = coroutine.resume(connectionThread)
+                  if not status then
+                     print(err)
+                  end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
                   connection:close()

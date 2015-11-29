@@ -20,7 +20,6 @@ return function (connection, req, args)
       if chunk == nil then
          continue = false
       else
-         coroutine.yield()
          connection:send(chunk)
          bytesSent = bytesSent + #chunk
          chunk = nil
