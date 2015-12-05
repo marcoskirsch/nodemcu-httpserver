@@ -23,6 +23,7 @@ return function (connection, req, args)
          connection:send(chunk)
          bytesSent = bytesSent + #chunk
          chunk = nil
+         tmr.wdclr() -- loop can take a while for long files. tmr.wdclr() prevent watchdog to restart module
          --print("Sent" .. args.file, bytesSent)
       end
    end

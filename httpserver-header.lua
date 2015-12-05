@@ -23,6 +23,7 @@ return function (connection, code, extension, gzip)
 
    connection:send("HTTP/1.0 " .. code .. " " .. getHTTPStatusString(code) .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType["contentType"] .. "\r\n")
    if gzip then
+       connection:send("Cache-Control: max-age=2592000\r\n")
        connection:send("Content-Encoding: gzip\r\n")
    end
    connection:send("Connection: close\r\n\r\n")
