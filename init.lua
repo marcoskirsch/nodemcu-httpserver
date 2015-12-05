@@ -1,44 +1,24 @@
 -- Begin WiFi configuration
-
-local wifiConfig = {}
-
--- wifi.STATION         -- station: join a WiFi network
--- wifi.SOFTAP          -- access point: create a WiFi network
--- wifi.wifi.STATIONAP  -- both station and access point
-wifiConfig.mode = wifi.STATIONAP  -- both station and access point
-
-wifiConfig.accessPointConfig = {}
-wifiConfig.accessPointConfig.ssid = "ESP-"..node.chipid()   -- Name of the SSID you want to create
-wifiConfig.accessPointConfig.pwd = "ESP-"..node.chipid()    -- WiFi password - at least 8 characters
-
-wifiConfig.accessPointIpConfig = {}
-wifiConfig.accessPointIpConfig.ip = "192.168.111.1"
-wifiConfig.accessPointIpConfig.netmask = "255.255.255.0"
-wifiConfig.accessPointIpConfig.gateway = "192.168.111.1"
-
-wifiConfig.stationPointConfig = {}
-wifiConfig.stationPointConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
-wifiConfig.stationPointConfig.pwd =  ""                -- Password for the WiFi network
+conf = dofile("httpserver-conf.lc")
 
 -- Tell the chip to connect to the access point
 
-wifi.setmode(wifiConfig.mode)
-print('set (mode='..wifi.getmode()..')')
+wifi.setmode(conf.wifi.mode)
+print('Wifi Mode:'..wifi.getmode())
 
-if (wifiConfig.mode == wifi.SOFTAP) or (wifiConfig.mode == wifi.STATIONAP) then
-    print('AP MAC: ',wifi.ap.getmac())
-    wifi.ap.config(wifiConfig.accessPointConfig)
-    wifi.ap.setip(wifiConfig.accessPointIpConfig)
+if (conf.wifi.mode == wifi.SOFTAP) or (conf.wifi.mode == wifi.STATIONAP) then
+    print('AP MAC: '..wifi.ap.getmac())
+    wifi.ap.config(conf.wifi.AP.config)
+    wifi.ap.setip(conf.wifi.AP.ip)
 end
-if (wifiConfig.mode == wifi.STATION) or (wifiConfig.mode == wifi.STATIONAP) then
-    print('Client MAC: ',wifi.sta.getmac())
-    wifi.sta.config(wifiConfig.stationPointConfig.ssid, wifiConfig.stationPointConfig.pwd, 1)
+if (conf.wifi.mode == wifi.STATION) or (conf.wifi.mode == wifi.STATIONAP) then
+    print('Client MAC: '..wifi.sta.getmac())
+    wifi.sta.config(conf.wifi.client.ssid, conf.wifi.client.pwd, 1)
 end
 
-print('chip: ',node.chipid())
-print('heap: ',node.heap())
+print('Chip: '..node.chipid()..' Heap: '..node.heap())
 
-wifiConfig = nil
+conf = nil
 collectgarbage()
 
 -- End WiFi configuration
