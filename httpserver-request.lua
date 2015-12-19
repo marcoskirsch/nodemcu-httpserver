@@ -51,7 +51,7 @@ local function getRequestData(payload)
     if requestData then
       return requestData
     else
-      local mimeType = string.match(payload, "Content%-Type: (%S+)\r\n")
+      local mimeType = string.match(payload, "Content%-Type: ([%w/-]+)")
       local body_start = payload:find("\r\n\r\n", 1, true)
       local body = payload:sub(body_start, #payload)
       payload = nil
