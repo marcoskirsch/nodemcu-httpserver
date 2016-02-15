@@ -53,6 +53,7 @@ end
 -- Parses the client's request. Returns a dictionary containing pretty much everything
 -- the server needs to know about the uri.
 return function (request)
+   --print("Request: \n", request)
    local e = request:find("\r\n", 1, true)
    if not e then return nil end
    local line = request:sub(1, e - 1)
