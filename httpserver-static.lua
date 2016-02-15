@@ -7,7 +7,9 @@ return function (connection, args)
    --print("Begin sending:", args.file)
    -- Send file in little chunks
    local continue = true
+   local size = file.list()[args.file]
    local bytesSent = 0
+   local chunkSize = 1024 -- @TODO: can chunkSize be larger?
    while continue do
       collectgarbage()
       -- NodeMCU file API lets you open 1 file at a time.
@@ -15,17 +17,17 @@ return function (connection, args)
       -- to support multiple simultaneous clients.
       file.open(args.file)
       file.seek("set", bytesSent)
-      local chunk = file.read(256)
+      local chunk = file.read(chunkSize)
       file.close()
-      if chunk == nil then
-         continue = false
-      else
-         coroutine.yield()
-         connection:send(chunk)
-         bytesSent = bytesSent + #chunk
-         chunk = nil
-         --print("Sent" .. args.file, bytesSent)
-      end
+
+      connection:send(chunk)
+      bytesSent = bytesSent + #chunk
+      chunk = nil
+      --print("Sent: " .. bytesSent .. " of " .. size)
+      -- nodemcu-firmware disallows queueing send operations,
+      -- so we must call coroutine.yield() after every connection:send()
+      -- The onSent() will resume us. But only yield if we aren't done yet!
+      if bytesSent == size then continue = false else coroutine.yield() end
    end
-   --print("Finished sending:", args.file)
+   --print("Finished sending: ", args.file)
 end

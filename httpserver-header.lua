@@ -26,10 +26,12 @@ return function (connection, code, extension)
 
    local mimeType = getMimeType(extension)
 
-   connection:send("HTTP/1.0 " .. code .. " " .. getHTTPStatusString(code) .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType["contentType"] .. "\r\n")
-   if mimeType["gzip"] then
-       connection:send("Content-Encoding: gzip\r\n")
-   end
-   connection:send("Connection: close\r\n\r\n")
+   local header = "HTTP/1.0 " .. code .. " " .. getHTTPStatusString(code) .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType["contentType"] .. "\r\n"
+   if mimeType["gzip"] then header = header .. "Content-Encoding: gzip\r\n" end
+   header = header .. "Connection: close\r\n\r\n"
+   connection:send(header)
+   header = nil
+   coroutine.yield()
+
 end
 
