@@ -153,6 +153,12 @@ return function (port)
 
          connection:on("receive", onReceive)
          connection:on("sent", onSent)
+         connection:on("disconnection",function(c)
+            if connectionThread then
+               connectionThread = nil
+               collectgarbage()
+            end
+         end) 
 
       end
    )
