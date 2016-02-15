@@ -1,16 +1,12 @@
-local function sendHeader(connection)
-   connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nCache-Control: private, no-store\r\n\r\n")
-
-end
-
 local function sendAttr(connection, attr, val)
    connection:send("<li><b>".. attr .. ":</b> " .. val .. "<br></li>\n")
+   coroutine.yield()
 end
 
 return function (connection, args)
-   collectgarbage()
-   sendHeader(connection)
+   dofile("httpserver-header.lc")(connection, 200, 'html')
    connection:send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>A Lua script sample</title></head><body><h1>Node info</h1><ul>')
+   coroutine.yield()
    majorVer, minorVer, devVer, chipid, flashid, flashsize, flashmode, flashspeed = node.info();
    sendAttr(connection, "NodeMCU version"       , majorVer.."."..minorVer.."."..devVer)
    sendAttr(connection, "chipid"                , chipid)

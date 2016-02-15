@@ -17,6 +17,7 @@ local function pushTheButton(connection, pin)
 
    -- Send back JSON response.
    connection:send("HTTP/1.0 200 OK\r\nContent-Type: application/json\r\nCache-Control: private, no-store\r\n\r\n")
+   coroutine.yield()
    connection:send('{"error":0, "message":"OK"}')
 
 end
@@ -27,6 +28,7 @@ return function (connection, args)
    elseif args.door == "2" then pushTheButton(connection, 2)   -- GPIO2
    else
       connection:send("HTTP/1.0 400 OK\r\nContent-Type: application/json\r\nCache-Control: private, no-store\r\n\r\n")
+      coroutine.yield()
       connection:send('{"error":-1, "message":"Bad door"}')
    end
 end
