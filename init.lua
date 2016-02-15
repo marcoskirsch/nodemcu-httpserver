@@ -2,14 +2,17 @@
 
 local wifiConfig = {}
 
--- wifi.STATION         -- station: join a WiFi network
--- wifi.AP              -- access point: create a WiFi network
--- wifi.wifi.STATIONAP  -- both station and access point
-wifiConfig.mode = wifi.STATIONAP  -- both station and access point
+-- Uncomment the WiFi mode you want.
+wifiConfig.mode = wifi.STATION         -- station: join a WiFi network
+-- wifiConfig.mode = wifi.AP              -- access point: create a WiFi network
+-- wifiConfig.mode = wifi.STATIONAP       -- both station and access point
 
 wifiConfig.accessPointConfig = {}
 wifiConfig.accessPointConfig.ssid = "ESP-"..node.chipid()   -- Name of the SSID you want to create
 wifiConfig.accessPointConfig.pwd = "ESP-"..node.chipid()    -- WiFi password - at least 8 characters
+
+-- Configure fixed IP address
+wifi.sta.setip({ip="10.0.7.111q", netmask="255.255.224.0", gateway="24.55.0.1"})
 
 wifiConfig.stationPointConfig = {}
 wifiConfig.stationPointConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
