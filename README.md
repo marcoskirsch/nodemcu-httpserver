@@ -25,7 +25,7 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 
          make upload_server
 
-   And if you only want to upload the http files:
+   And if you only want to upload the server files:
 
          make upload_http
 
@@ -62,7 +62,7 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
    considered secure if the server is not using encryption, as your username and password travel
    in plain text.
 
-## How to create dynamic Lua scripts
+## How to use server-side scripting using your own Lua scripts
 
    Similar to static files, upload a Lua script called "http/[name].lua where you replace [name] with your script's name.
    The script should return a function that takes two parameters:
@@ -71,18 +71,30 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
          -- code goes here
       end
 
-   Use the _connection_ parameter to send the response back to the client. Note that you are in charge of sending the HTTP header.
+   Use the _connection_ parameter to send the response back to the client.
+   Note that you are in charge of sending the HTTP header, but you can use the bundled httpserver-header.lua
+   script for that. See how other examples do it.
    The _args_ parameter is a Lua table that contains any arguments sent by the client in the GET request.
 
    For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
    in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color = "red"_.
 
-   If you are going to be sending lots (as in over a KB) of data in your script, you should yield the thread/coroutine
-   every now and then in order to avoid overflowing the send buffer in the microcontroller. Use:
+#### Very important: yielding after send
+
+   nodemcu-firmware does not support queueing multiple send operations. So in order to get things to work,
+   nodemcu-httsperver uses Lua coroutines. In your script, after every
+
+      connection.send(foo)
+
+   you must ensure that you call
 
       coroutine.yield()
 
-   Look at the included example scripts for more ideas.
+   *except on the very last one*. This is because the server will resume your script after the send operation finished.
+   Memory is tight so it's likely that you will need multiple sends. Be careful. Also be careful not to send too much
+   data in a single operation or you risk overflowing the chip's send buffer.
+
+   Look at the included example scripts for plenty of ideas.
 
 ### Example: Garage door opener
 
@@ -123,29 +135,26 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 #### Security implications
 
    Be careful permanently installing something like this in your home. The server provides
-   no encryption. Your only layer of security is the WiFi network and anyone with access
-   to it could open or close your garage, enter your home, and steal your flatscreen TV.
+   no encryption. Your only layers of security are the WiFi network's password and simple
+   HTTP authentication which sends your password unencrypted.
 
-   This script is provided simply as an educational example and you should treat accordingly.
+   This script is provided simply as an educational example. You've been warned.
 
 ## Not supported
 
 * Other methods: HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH
-* Encryption
+* Encryption / SSL
 * Multiple users (HTTP Basic Authentication)
 * Only protect certain directories (HTTP Basic Authentication)
+* nodemcu-firmware versions older 1.5.1 (January 2016) because that's what I tested on.
 
 ## Notes on memory usage.
 
    The chip is very, very memory constrained.
 
-   * Use nodemcu-firmware dev096 or newer with as few optional modules as possible.
-   Older versions have very little free RAM.
+   * Use a recent nodemcu-firmware with as few optional modules as possible.
 
    * Use a firmware build without floating point support. This takes up a good chunk of RAM as well.
-   In the (nodemcu-firmware releases page)[https://github.com/nodemcu/nodemcu-firmware/releases] these
-   would be the ones with the term "integer" in them. If you are building it yourself then we'll assume
-   you know what you're doing.
 
    * Any help reducing the memory needs of the server without crippling its functionality is appreciated!
 
