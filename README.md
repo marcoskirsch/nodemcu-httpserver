@@ -133,15 +133,27 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 * Only protect certain directories (HTTP Basic Authentication)
 * nodemcu-firmware versions older 1.5.1 (January 2016) because that's what I tested on.
 
+## Contributing
+
+   Since this is a project maintained in my free time, I am pretty lenient on contributions.
+   I trust you to make sure you didn't break existing functionality nor the shipping examples
+   and that you add examples for new features. I won't test all your changes myself but I
+   am very grateful of improvements and fixes. Open issues in GitHub too, that's useful.
+
+   Please follow the coding style as close as possible:
+
+   * No tabs, indent with 3 spaces
+   * Unix (LF) line endings
+   * Variables are camelCase
+   * Follow file naming conventions
+   * Use best judgement
+
 ## Notes on memory usage.
 
    The chip is very, very memory constrained.
 
    * Use a recent nodemcu-firmware with as few optional modules as possible.
-
    * Use a firmware build without floating point support. This takes up a good chunk of RAM as well.
-
    * Any help reducing the memory needs of the server without crippling its functionality is appreciated!
-
    * Compile your Lua scripts in order to reduce their memory usage. The server knows to serve and treat
    both .lua and .lc files as scripts.
