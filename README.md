@@ -1,6 +1,16 @@
 # [nodemcu-httpserver](https://github.com/marcoskirsch/nodemcu-httpserver)
 A (very) simple web server written in Lua for the ESP8266 running the NodeMCU firmware.
 
+[From the NodeMCU FAQ](https://nodemcu.readthedocs.org/en/dev/en/faq/#how-do-i-minimise-the-footprint-of-an-application):
+
+> If you are trying to implement a user-interface or HTTP webserver in your ESP8266 then
+> you are really abusing its intended purpose. When it comes to scoping your ESP8266
+> applications, the adage Keep It Simple Stupid truly applies.
+>
+> -- <cite>[Terry Elison](https://github.com/TerryE)</cite>, nodemcu-firmware maintainer,
+
+Let the abuse begin.
+
 ## Features
 
 * GET, POST, PUT and minor changes to support other methods
