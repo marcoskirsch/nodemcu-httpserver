@@ -66,36 +66,20 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 ## How to use server-side scripting using your own Lua scripts
 
    Similar to static files, upload a Lua script called "http/[name].lua where you replace [name] with your script's name.
-   The script should return a function that takes two parameters:
+   The script should return a function that takes three parameters:
 
-      return function (connection, args)
+      return function (connection, req, args)
          -- code goes here
       end
 
    Use the _connection_ parameter to send the response back to the client.
    Note that you are in charge of sending the HTTP header, but you can use the bundled httpserver-header.lua
    script for that. See how other examples do it.
+   The _req_ parameter contains information about the request.
    The _args_ parameter is a Lua table that contains any arguments sent by the client in the GET request.
 
    For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
    in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color = "red"_.
-
-#### Very important: yielding after send
-
-   nodemcu-firmware does not support queueing multiple send operations. So in order to get things to work,
-   nodemcu-httsperver uses Lua coroutines. In your script, after every
-
-      connection.send(foo)
-
-   you must ensure that you call
-
-      coroutine.yield()
-
-   *except on the very last one*. This is because the server will resume your script after the send operation finished.
-   Memory is tight so it's likely that you will need multiple sends. Be careful. Also be careful not to send too much
-   data in a single operation or you risk overflowing the chip's send buffer.
-
-   Look at the included example scripts for plenty of ideas.
 
 ### Example: Garage door opener
 
@@ -143,7 +127,7 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 
 ## Not supported
 
-* Other methods: HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH
+* Other methods: HEAD, DELETE, TRACE, OPTIONS, CONNECT, PATCH
 * Encryption / SSL
 * Multiple users (HTTP Basic Authentication)
 * Only protect certain directories (HTTP Basic Authentication)
