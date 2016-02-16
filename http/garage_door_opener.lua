@@ -22,7 +22,7 @@ local function pushTheButton(connection, pin)
 
 end
 
-return function (connection, args)
+return function (connection, req, args)
    print('Garage door button was pressed!', args.door)
    if     args.door == "1" then pushTheButton(connection, 1)   -- GPIO1
    elseif args.door == "2" then pushTheButton(connection, 2)   -- GPIO2

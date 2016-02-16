@@ -25,3 +25,4 @@ return function (connection, args)
    end
    connection:send("</ul>\n</p>\n</body></html>")
 end
+

@@ -1,6 +1,5 @@
 return function (connection, args)
    dofile("httpserver-header.lc")(connection, 200, 'html')
-
    connection:send([===[
    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Arguments</title></head><body><h1>Arguments</h1>
    <form method="GET">
@@ -22,4 +21,6 @@ return function (connection, args)
    end
 
    connection:send("</ul>\n</body></html>")
+
 end
+

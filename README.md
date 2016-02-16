@@ -3,13 +3,14 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 
 ## Features
 
-* GET
+* GET, POST, PUT and minor changes to support other methods
 * Multiple MIME types
 * Error pages (404 and others)
 * Server-side execution of Lua scripts
-* Query string argument parsing
+* Query string argument parsing with decoding of arguments
 * Serving .gz compressed files
 * HTTP Basic Authentication
+* Decoding of request bodies in both application/x-www-form-urlencoded and application/json (if cjson is available)
 
 ## How to use
 
