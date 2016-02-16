@@ -20,7 +20,8 @@
    <h3>Serve me some pages!</h3>
    <ul>
       <li><a href="index.html">Index</a>: This page (static)</li>
-      <li><a href="zipped.html.gz">Zipped</a>: A compressed file (static)</li>
+      <li><a href="zipped.html">Zipped</a>: File is actually saved as zipped.html.gz. A compressed file! (static but gzipped)</li>
+      <li><a href="zipped.html.gz">Zipped</a>: Same exact file as served above. Server is smart enough to treat the .gz extension correctly (static but gzipped)</li>
       <li><a href="args.lua">Arguments</a>: Parses arguments passed in the URL and prints them. (Lua)</li>
       <li><a href="post.lua">Post</a>: A form that uses POST method.  Displays different content based on HTTP method. (Lua)</li>
       <li><a href="garage_door_opener.html">Garage door opener</a>: Control GPIO lines via the server. (Lua)</li>
