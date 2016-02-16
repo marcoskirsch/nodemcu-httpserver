@@ -3,8 +3,8 @@
 -- Author: Marcos Kirsch
 
 return function (connection, req, args)
-   dofile("httpserver-header.lc")(connection, 200, args.ext, args.gzipped)
    --print("Begin sending:", args.file)
+   dofile("httpserver-header.lc")(connection, 200, args.ext, args.isGzipped)
    -- Send file in little chunks
    local continue = true
    local size = file.list()[args.file]
@@ -24,10 +24,7 @@ return function (connection, req, args)
       bytesSent = bytesSent + #chunk
       chunk = nil
       --print("Sent: " .. bytesSent .. " of " .. size)
-      -- nodemcu-firmware disallows queueing send operations,
-      -- so we must call coroutine.yield() after every connection:send()
-      -- The onSent() will resume us. But only yield if we aren't done yet!
-      if bytesSent == size then continue = false else coroutine.yield() end
+      if bytesSent == size then continue = false end
    end
    --print("Finished sending: ", args.file)
 end

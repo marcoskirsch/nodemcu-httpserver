@@ -32,45 +32,43 @@ local function parseArgs(args)
 end
 
 local function parseFormData(body)
-  local data = {}
-  print("Parsing Form Data")
-  for kv in body.gmatch(body, "%s*&?([^=]+=[^&]+)") do
-    local key, value = string.match(kv, "(.*)=(.*)")
-    
-    print("Parsed: " .. key .. " => " .. value)
-    data[key] = uri_decode(value)
-  end
-  
-  return data
+   local data = {}
+   --print("Parsing Form Data")
+   for kv in body.gmatch(body, "%s*&?([^=]+=[^&]+)") do
+      local key, value = string.match(kv, "(.*)=(.*)")
+      --print("Parsed: " .. key .. " => " .. value)
+      data[key] = uri_decode(value)
+   end
+   return data
 end
 
 local function getRequestData(payload)
-  local requestData
-  return function ()
-    print("Getting Request Data")
-    if requestData then
-      return requestData
-    else
-      local mimeType = string.match(payload, "Content%-Type: ([%w/-]+)")
-      local body_start = payload:find("\r\n\r\n", 1, true)
-      local body = payload:sub(body_start, #payload)
-      payload = nil
-      collectgarbage()
-      
-      -- print("mimeType = [" .. mimeType .. "]")
-      
-      if mimeType == "application/json" then
-        print("JSON: " .. body)
-        requestData = cjson.decode(body)
-      elseif mimeType == "application/x-www-form-urlencoded" then
-        requestData = parseFormData(body)
+   local requestData
+   return function ()
+      --print("Getting Request Data")
+      if requestData then
+         return requestData
       else
-        requestData = {}
+         --print("payload = [" .. payload .. "]")
+         local mimeType = string.match(payload, "Content%-Type: ([%w/-]+)")
+         local bodyStart = payload:find("\r\n\r\n", 1, true)
+         local body = payload:sub(bodyStart, #payload)
+         payload = nil
+         collectgarbage()
+         --print("mimeType = [" .. mimeType .. "]")
+         --print("bodyStart = [" .. bodyStart .. "]")
+         --print("body = [" .. body .. "]")
+         if mimeType == "application/json" then
+            --print("JSON: " .. body)
+            requestData = cjson.decode(body)
+         elseif mimeType == "application/x-www-form-urlencoded" then
+            requestData = parseFormData(body)
+         else
+            requestData = {}
+         end
+         return requestData
       end
-      
-      return requestData
-    end
-  end
+   end
 end
 
 local function parseUri(uri)
