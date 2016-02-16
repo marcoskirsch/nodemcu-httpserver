@@ -83,7 +83,7 @@ return function (port)
                   file.close()
 
                   if fileExists then
-                     print("gzip variant exists, serving that one")
+                     --print("gzip variant exists, serving that one")
                      uri.file = uri.file .. ".gz"
                      uri.isGzipped = true
                   end
@@ -112,6 +112,22 @@ return function (port)
             local conf = dofile("httpserver-conf.lc")
             local auth
             local user = "Anonymous"
+
+            -- as suggest by anyn99 (https://github.com/marcoskirsch/nodemcu-httpserver/issues/36#issuecomment-167442461)
+            -- Some browsers send the POST data in multiple chunks.
+            -- Collect data packets until the size of HTTP body meets the Content-Length stated in header
+            if payload:find("Content%-Length:") or bBodyMissing then
+               if fullPayload then fullPayload = fullPayload .. payload else fullPayload = payload end
+               if (tonumber(string.match(fullPayload, "%d+", fullPayload:find("Content%-Length:")+16)) > #fullPayload:sub(fullPayload:find("\r\n\r\n", 1, true)+4, #fullPayload)) then
+                  bBodyMissing = true
+                  return
+               else
+                  --print("HTTP packet assembled! size: "..#fullPayload)
+                  payload = fullPayload
+                  fullPayload, bBodyMissing = nil
+               end
+            end
+            collectgarbage()
 
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
