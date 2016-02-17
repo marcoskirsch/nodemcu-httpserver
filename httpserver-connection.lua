@@ -1,7 +1,8 @@
 -- httpserver-connection
 -- Part of nodemcu-httpserver, provides a buffered connection object that can handle multiple
--- consecutive send() calls.
--- For this to work, it must be used from a coroutine.
+-- consecutive send() calls, and buffers small payloads to send once they get big.
+-- For this to work, it must be used from a coroutine and owner is responsible for the final
+-- flush() and for closing the connection.
 -- Author: Philip Gladstone, Marcos Kirsch
 
 BufferedConnection = {}
@@ -23,18 +24,20 @@ function BufferedConnection:new(connection)
       return false
    end
 
-   --@TODO What are the hardcoded 1000 and 800 about? Can we increase?
    function newInstance:send(payload)
       local l = payload:len()
-      if l + self.size > 1000 then
+      if l + self.size > 1024 then
+         -- Send what we have buffered so far, not including payload.
          if self:flush() then
             coroutine.yield()
          end
       end
-      if l > 800 then
+      if l > 768 then
+         -- Payload is big. Send it now rather than buffering it for later.
          self.connection:send(payload)
          coroutine.yield()
       else
+         -- Payload is small. Save off payload for later sending.
          table.insert(self.data, payload)
          self.size = self.size + l
       end
@@ -42,6 +45,5 @@ function BufferedConnection:new(connection)
 
    return newInstance
 end
-
 
 return BufferedConnection
