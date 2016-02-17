@@ -18,47 +18,21 @@ return function (port)
 
          local function startServing(fileServeFunction, connection, req, args)
 
-            local bufferedConnection = {}
-            connectionThread = coroutine.create(function(fileServeFunction, bconnection, req, args)
-               fileServeFunction(bconnection, req, args)
-               if not bconnection:flush() then
+            connectionThread = coroutine.create(function(fileServeFunction, bufferedConnection, req, args)
+               fileServeFunction(bufferedConnection, req, args)
+               if not bufferedConnection:flush() then
                   connection:close()
                   connectionThread = nil
                end
             end)
 
-            function bufferedConnection:flush()
-               if self.size > 0 then
-                  connection:send(table.concat(self.data, ""))
-                  self.data = {}
-                  self.size = 0
-                  return true
-               end
-               return false
-            end
-
-            function bufferedConnection:send(payload)
-               local l = payload:len()
-               if l + self.size > 1000 then
-                  if self:flush() then
-                     coroutine.yield()
-                  end
-               end
-               if l > 800 then
-                  connection:send(payload)
-                  coroutine.yield()
-               else
-                  table.insert(self.data, payload)
-                  self.size = self.size + l
-               end
-            end
-
-            bufferedConnection.size = 0
-            bufferedConnection.data = {}
+            local BufferedConnectionClass = dofile("httpserver-connection.lc")
+            local bufferedConnection = BufferedConnectionClass:new(connection)
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
             if not status then
                print("Error: ", err)
             end
+
          end
 
          local function onRequest(connection, req)
@@ -185,6 +159,7 @@ return function (port)
    -- false and nil evaluate as false
    local ip = wifi.sta.getip()
    if not ip then ip = wifi.ap.getip() end
+   if not ip then ip = "unknown IP" end
    print("nodemcu-httpserver running at http://" .. ip .. ":" ..  port)
    return s
 
