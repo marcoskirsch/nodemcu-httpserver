@@ -41,8 +41,6 @@ return function (port)
             local uri = req.uri
             local fileServeFunction = nil
 
-            --print("Method: " .. method);
-
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
                uri.args = {code = 400, errorString = "Bad Request"}
@@ -105,7 +103,7 @@ return function (port)
 
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
-            print("Requested URI: " .. req.request)
+            print(req.method .. ": " .. req.request)
             if conf.auth.enabled then
                auth = dofile("httpserver-basicauth.lc")
                user = auth.authenticate(payload) -- authenticate returns nil on failed auth
