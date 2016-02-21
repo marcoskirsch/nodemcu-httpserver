@@ -4,6 +4,7 @@
 
 return function (connection, req, args)
 
+   -- @TODO: would be nice to use httpserver-header.lua
    local function getHeader(connection, code, errorString, extraHeaders, mimeType)
       local header = "HTTP/1.0 " .. code .. " " .. errorString .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType .. "\r\n"
       for i, extraHeader in ipairs(extraHeaders) do
@@ -15,9 +16,7 @@ return function (connection, req, args)
 
    print("Error " .. args.code .. ": " .. args.errorString)
    args.headers = args.headers or {}
-   local html = getHeader(connection, args.code, args.errorString, args.headers, "text/html")
-   html = html .. "<html><head><title>" .. args.code .. " - " .. args.errorString .. "</title></head><body><h1>" .. args.code .. " - " .. args.errorString .. "</h1></body></html>\r\n"
-   connection:send(html)
-   html = nil
+   connection:send(getHeader(connection, args.code, args.errorString, args.headers, "text/html"))
+   connection:send("<html><head><title>" .. args.code .. " - " .. args.errorString .. "</title></head><body><h1>" .. args.code .. " - " .. args.errorString .. "</h1></body></html>\r\n")
 
 end
