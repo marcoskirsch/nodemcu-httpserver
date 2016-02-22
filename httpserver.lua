@@ -9,17 +9,17 @@ return function (port)
       port,
       function (connection)
 
-         -- This variable holds the thread used for sending data back to the user.
-         -- We do it in a separate thread because we need to yield when sending lots
-         -- of data in order to avoid overflowing the mcu's buffer.
+         -- This variable holds the thread (actually a Lua coroutine) used for sending data back to the user.
+         -- We do it in a separate thread because we need to send in little chunks and wait for the onSent event
+         -- before we can send more, or we risk overflowing the mcu's buffer.
          local connectionThread
 
          local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
 
          local function startServing(fileServeFunction, connection, req, args)
-
             connectionThread = coroutine.create(function(fileServeFunction, bufferedConnection, req, args)
                fileServeFunction(bufferedConnection, req, args)
+               -- The bufferedConnection may still hold some data that hasn't been sent. Flush it before closing.
                if not bufferedConnection:flush() then
                   connection:close()
                   connectionThread = nil
@@ -32,10 +32,9 @@ return function (port)
             if not status then
                print("Error: ", err)
             end
-
          end
 
-         local function onRequest(connection, req)
+         local function handleRequest(connection, req)
             collectgarbage()
             local method = req.method
             local uri = req.uri
@@ -110,7 +109,7 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
-               onRequest(connection, req)
+               handleRequest(connection, req)
             else
                local args = {}
                local fileServeFunction = dofile("httpserver-error.lc")
@@ -143,14 +142,16 @@ return function (port)
             end
          end
 
-         connection:on("receive", onReceive)
-         connection:on("sent", onSent)
-         connection:on("disconnection",function(c)
+         local function onDisconnect(connection, payload)
             if connectionThread then
                connectionThread = nil
                collectgarbage()
             end
-         end)
+         end
+
+         connection:on("receive", onReceive)
+         connection:on("sent", onSent)
+         connection:on("disconnection", onDisconnect)
 
       end
    )
