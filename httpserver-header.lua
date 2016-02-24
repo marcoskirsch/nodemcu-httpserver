@@ -19,14 +19,11 @@ return function (connection, code, extension, isGzipped)
 
    local mimeType = getMimeType(extension)
 
-   local header = "HTTP/1.0 " .. code .. " " .. getHTTPStatusString(code) .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType .. "\r\nnCache-Control: private, no-store\r\n"
+   connection:send("HTTP/1.0 " .. code .. " " .. getHTTPStatusString(code) .. "\r\nServer: nodemcu-httpserver\r\nContent-Type: " .. mimeType .. "\r\nnCache-Control: private, no-store\r\n")
    if isGzipped then
-      header = header .. "Cache-Control: max-age=2592000\r\n"
-      header = header .. "Content-Encoding: gzip\r\n"
+      connection:send("Cache-Control: max-age=2592000\r\nContent-Encoding: gzip\r\n")
    end
-   header = header .. "Connection: close\r\n\r\n"
-   connection:send(header)
-   header = nil
+   connection:send("Connection: close\r\n\r\n")
 
 end
 
