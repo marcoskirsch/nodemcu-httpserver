@@ -23,6 +23,8 @@ var edit_text;
 var offset;
 var xmlhttp;
 var form = document.getElementById("form");
+]===])
+      connection:send([===[
 function handleRequestCallback() {
    if (xmlhttp.readyState==4 && xmlhttp.status==200)
    {
@@ -32,6 +34,8 @@ function handleRequestCallback() {
           document.getElementById("local_status").innerHTML = "Sending: " + offset + "/" + edit_text.length + " bytes";
           params = "action=append&data=" + encodeURIComponent(edit_text.substring(offset, offset + block_size));
           xmlhttp=new XMLHttpRequest();
+]===])
+      connection:send([===[
           xmlhttp.open("POST", "editor.lua", true);
           xmlhttp.onreadystatechange=handleRequestCallback;
           xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -40,6 +44,8 @@ function handleRequestCallback() {
           xmlhttp.send(params);
        } else {
           document.getElementById("local_status").innerHTML = "Saved " + edit_text.length + " bytes";
+]===])
+      connection:send([===[
           params = "action=compile";
           xmlhttp=new XMLHttpRequest();
           xmlhttp.open("POST", "editor.lua", true);
@@ -51,6 +57,8 @@ function handleRequestCallback() {
        }
    }
 }
+]===])
+      connection:send([===[
 function handleCompileCallback() {
    if (xmlhttp.readyState==4 && xmlhttp.status==200)
    {
@@ -60,6 +68,8 @@ function handleCompileCallback() {
 
 document.getElementById("save").addEventListener("click", function () {
    edit_text = document.getElementById("edit_text").value;
+]===])
+      connection:send([===[
    offset = 0;
    document.getElementById("local_status").innerHTML = "Sending: " + offset + "/" + edit_text.length + " bytes";
    document.getElementById("remote_status").innerHTML = "";
@@ -69,6 +79,8 @@ document.getElementById("save").addEventListener("click", function () {
    xmlhttp.onreadystatechange=handleRequestCallback;
    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
    xmlhttp.setRequestHeader("Content-length", params.length);
+]===])
+      connection:send([===[
    xmlhttp.setRequestHeader("Connection", "close");
    xmlhttp.send(params);
 });
@@ -79,7 +91,7 @@ document.getElementById("save").addEventListener("click", function () {
       local rd = req.getRequestData()
       if rd['action'] == 'save' then
          data = rd['data']
-         file.open(edit_filename .. '.lua', 'w+')
+         file.open('http/' .. edit_filename .. '.lua', 'w+')
          file.write(data)
          file.close()
          collectgarbage()
