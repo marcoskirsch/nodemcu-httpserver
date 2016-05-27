@@ -1,12 +1,10 @@
 return function (connection, req, args)
+   edit_filename = 'adhoc'
    dofile('httpserver-header.lc')(connection, 200, 'html')
 
-   edit_filename = 'adhoc'
    if req.method == 'GET' then
       connection:send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>lua editor</title></head><body><h1>lua editor</h1>')
-      connection:send('<p><textarea rows="20" cols="80" id="edit_text" name="edit_text">')
-
-      collectgarbage()
+      connection:send('<p><textarea rows="20" cols="40" id="edit_text" name="edit_text">')
       file.open('http/' .. edit_filename .. '.lua', 'r')
       buffer = file.read()
       repeat
@@ -14,8 +12,6 @@ return function (connection, req, args)
          buffer = file.read()
       until buffer == nil
       file.close()
-      collectgarbage()
-
       connection:send([===[
 </textarea></p>
 <button id="save">Save</button>
