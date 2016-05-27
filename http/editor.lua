@@ -79,7 +79,7 @@ document.getElementById("save").addEventListener("click", function () {
       local rd = req.getRequestData()
       if rd['action'] == 'save' then
          data = rd['data']
-         file.open('http/' .. edit_filename .. '.lua', 'w+')
+         file.open(edit_filename .. '.lua', 'w+')
          file.write(data)
          file.close()
          collectgarbage()
