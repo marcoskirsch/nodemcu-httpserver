@@ -35,7 +35,7 @@ Please enable authentication in "httpserver-conf.lua".
 <div id="remoteStatus"></div>
 
 <script>
-var blockSize = 1024;
+var blockSize = 512;
 var editText;
 var filename;
 var offset;
@@ -115,7 +115,9 @@ document.getElementById("save").addEventListener("click", function () {
    elseif req.method == 'POST' then
       --print('POST method')
       local rd = req.getRequestData()
+      --print(node.heap())
       collectgarbage()
+      --print(node.heap())
       if rd['action'] == 'load' then
          --print('load')
          file.open('http/' .. rd['filename'], 'r')
@@ -143,7 +145,7 @@ document.getElementById("save").addEventListener("click", function () {
       elseif rd['action'] == 'compile' then
          --print('compile')
          node.compile('http/' .. rd['filename'])
-         connection:send('<a href=\"' .. edit_filename .. '.lc\">' .. edit_filename .. '.lc</a>')
+         connection:send('<a href=\"' .. string.sub(rd['filename'], 1, -5) .. '.lc\">' .. string.sub(rd['filename'], 1, -5) .. '.lc</a>')
       end
    end
    collectgarbage()
