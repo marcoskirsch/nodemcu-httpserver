@@ -5,7 +5,7 @@
 NODEMCU-UPLOADER=../nodemcu-uploader/nodemcu-uploader.py
 # Serial port
 PORT=/dev/cu.SLAB_USBtoUART
-SPEED=9600
+SPEED=115200
 
 ######################################################################
 # End of user config
