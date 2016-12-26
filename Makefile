@@ -7,6 +7,8 @@ NODEMCU-UPLOADER=../nodemcu-uploader/nodemcu-uploader.py
 PORT=/dev/cu.SLAB_USBtoUART
 SPEED=115200
 
+NODEMCU-COMMAND=$(NODEMCU-UPLOADER) -b $(SPEED) --start_baud $(SPEED) -p $(PORT) upload
+
 ######################################################################
 # End of user config
 ######################################################################
@@ -33,17 +35,17 @@ usage:
 
 # Upload one files only
 upload:
-	@python $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(FILE)
+	@python $(NODEMCU-COMMAND) $(FILE)
 
 # Upload HTTP files only
 upload_http: $(HTTP_FILES)
-	@python $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f))
+	@python $(NODEMCU-COMMAND) $(foreach f, $^, $(f))
 
 # Upload httpserver lua files (init and server module)
 upload_server: $(LUA_FILES)
-	@python $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f))
+	@python $(NODEMCU-COMMAND) $(foreach f, $^, $(f))
 
 # Upload all
 upload_all: $(LUA_FILES) $(HTTP_FILES)
-	@python $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f))
+	@python $(NODEMCU-COMMAND) $(foreach f, $^, $(f))
 
