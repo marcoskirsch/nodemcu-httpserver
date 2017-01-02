@@ -98,10 +98,10 @@ if (wifi.getmode() == wifi.STATION) or (wifi.getmode() == wifi.STATIONAP) then
          print('Connecting to WiFi Access Point ...')
          joinCounter = joinCounter + 1
       else
-         print("IP = " .. ip)
          if joinCounter == joinMaxAttempts then
             print('Failed to connect to WiFi Access Point.')
          else
+            print("IP = " .. ip)
             if (not not wifi.sta.getip()) or (not not wifi.ap.getip()) then
                -- Second parameter is for mDNS (aka Zeroconf aka Bonjour) registration.
                -- If the mdns module is compiled in the firmware, advertise the server with this name.
