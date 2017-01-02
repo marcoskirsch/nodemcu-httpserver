@@ -7,12 +7,16 @@ return function (connection, req, args)
    <h1>Server File Listing</h1>
    ]===])
 
-   local remaining, used, total=file.fsinfo()
+   local remaining, used, total = file.fsinfo()
    connection:send("<b>Total size: </b> " .. total .. " bytes<br/>\n" ..
                    "<b>In Use: </b> " .. used .. " bytes<br/>\n" ..
-                   "<b>Free: </b> " .. remaining .. " bytes<br/>\n" ..
-                   "<p>\n<b>Files:</b><br/>\n<ul>\n")
+                   "<b>Free: </b> " .. remaining .. " bytes<br/>\n")
 
+   local flashAddress, flashSize = file.fscfg ()
+   connection:send("<b>Flash Address: </b> " .. flashAddress .. " bytes<br/>\n" ..
+                   "<b>Flash Size: </b> " .. flashSize .. " bytes<br/>\n")
+
+   connection:send("<p>\n<b>Files:</b><br/>\n<ul>\n")
    for name, size in pairs(file.list()) do
       local isHttpFile = string.match(name, "(http/)") ~= nil
       if isHttpFile then
