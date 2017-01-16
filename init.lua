@@ -44,33 +44,54 @@ collectgarbage()
 -- End WiFi configuration
 
 -- Compile server code and remove original .lua files.
+-- All files that names not starting from "httpserver-" will be moved (renamed) to http/(filename)
 -- This only happens the first time afer the .lua files are uploaded.
 
-local compileAndRemoveIfNeeded = function(f)
-   if file.open(f) then
-      file.close()
-      print('Compiling:', f)
-      node.compile(f)
-      file.remove(f)
-      collectgarbage()
-   end
+local compileAndRemove = function()
+	for name in pairs(file.list()) do
+		local isHttpFile = string.match(name, "^(http/)")
+		local isCompiled = string.match(name, ".+(\.lc)$")
+		local isLuaScript = string.match(name, ".+(\.lua)$")
+		
+		if (name ~= 'init.lua') and (name ~= 'init_start.lua') and (name ~= 'LLbin.lua') then
+			if (not isHttpFile) and (not isCompiled) then
+				if isLuaScript then
+					if file.open(name) then
+						file.close(name)
+						file.remove(string.sub(name, 0, -3) .. "lc")
+						print('Compiling:', name)
+						node.compile(name)
+						file.remove(name)
+					end
+				end
+			end
+		end
+	end
 end
 
-local serverFiles = {
-   'httpserver.lua',
-   'httpserver-b64decode.lua',
-   'httpserver-basicauth.lua',
-   'httpserver-conf.lua',
-   'httpserver-connection.lua',
-   'httpserver-error.lua',
-   'httpserver-header.lua',
-   'httpserver-request.lua',
-   'httpserver-static.lua',
-}
-for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
+local renameAndRemove = function()
+	for name in pairs(file.list()) do
+		local isHttpFile = string.match(name, "^(http/)")
+		local isServerFile = string.match(name, "^(httpserver)")
+		
+		if (name ~= 'init.lua') and (name ~= 'init_start.lua') and (name ~= 'LLbin.lua') then
+			if (not isHttpFile) and (not isServerFile) then
+				if file.open(name) then
+					file.close(name)
+					print('Moving:', name)
+					file.remove("http/"..name)					
+					file.rename(name,"http/"..name)
+					file.remove(name)
+				end
+			end
+		end
+	end
+end
 
-compileAndRemoveIfNeeded = nil
-serverFiles = nil
+compileAndRemove()
+renameAndRemove()
+compileAndRemove = nil
+renameAndRemove = nil
 collectgarbage()
 
 -- Connect to the WiFi access point.
