@@ -2,10 +2,10 @@
 -- Part of nodemcu-httpserver, knows how to send an HTTP header.
 -- Author: Marcos Kirsch
 
-return function (connection, code, extension, isGzipped)
+return function(connection, code, extension, isGzipped)
 
    local function getHTTPStatusString(code)
-      local codez = {[200]="OK", [400]="Bad Request", [404]="Not Found",}
+      local codez = { [200] = "OK", [400] = "Bad Request", [404] = "Not Found", [500] = "Internal Server Error", }
       local myResult = codez[code]
       -- enforce returning valid http codes all the way throughout?
       if myResult then return myResult else return "Not Implemented" end
@@ -25,6 +25,5 @@ return function (connection, code, extension, isGzipped)
       connection:send("Cache-Control: private, max-age=2592000\r\nContent-Encoding: gzip\r\n")
    end
    connection:send("Connection: close\r\n\r\n")
-
 end
 
