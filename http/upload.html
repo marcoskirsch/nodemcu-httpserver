@@ -396,7 +396,7 @@
 						fileUploadRequest = 0;
 					}
 
-					lastRequest = 'upload.lc?cmd=upload&filename=' + file.name + '&filesize=' + file.size + '&len=' + chunkLen + '&offset=' + sendingOffset + '&data=' + filedata;
+					lastRequest = 'upload.lua?cmd=upload&filename=' + file.name + '&filesize=' + file.size + '&len=' + chunkLen + '&offset=' + sendingOffset + '&data=' + filedata;
 
 					fileUploadRequest.timeout = 5000;
 					fileUploadRequest.open('GET', lastRequest, true);
@@ -526,7 +526,7 @@
 					fileListRequest = null;
 				}
 
-				fileListRequest.open('GET', 'upload.lc?cmd=list', true);
+				fileListRequest.open('GET', 'upload.lua?cmd=list', true);
 				fileListRequest.send();
 			}
 
@@ -541,7 +541,7 @@
 					}
 				}
 
-				fileRemoveRequest.open('GET', 'upload.lc?cmd=remove&filename=' + name, true);
+				fileRemoveRequest.open('GET', 'upload.lua?cmd=remove&filename=' + name, true);
 				fileRemoveRequest.send();
 			}
 		</script>
