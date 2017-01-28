@@ -14,6 +14,7 @@ function BufferedConnection:new(connection)
    newInstance.size = 0
    newInstance.data = {}
 
+   -- Returns true if there was any data to be sent.
    function newInstance:flush()
       if self.size > 0 then
          self.connection:send(table.concat(self.data, ""))
@@ -25,43 +26,34 @@ function BufferedConnection:new(connection)
    end
 
    function newInstance:send(payload)
-      local flushthreshold = 1400
-
-      local newsize = self.size + payload:len()
-      while newsize > flushthreshold do
-          --STEP1: cut out piece from payload to complete threshold bytes in table
-          local piecesize = flushthreshold - self.size
-          local piece = payload:sub(1, piecesize)
-          payload = payload:sub(piecesize + 1, -1)
-          --STEP2: insert piece into table
-          table.insert(self.data, piece)
-          self.size = self.size + piecesize --size should be same as flushthreshold
-          --STEP3: flush entire table
-          if self:flush() then
-              coroutine.yield()
-          end
-          --at this point, size should be 0, because the table was just flushed
-          newsize = self.size + payload:len()
+      local flushThreshold = 1400
+      local newSize = self.size + payload:len()
+      while newSize >= flushThreshold do
+         --STEP1: cut out piece from payload to complete threshold bytes in table
+         local pieceSize = flushThreshold - self.size
+         local piece = payload:sub(1, pieceSize)
+         payload = payload:sub(pieceSize + 1, -1)
+         --STEP2: insert piece into table
+         table.insert(self.data, piece)
+         piece = nil
+         self.size = self.size + pieceSize --size should be same as flushThreshold
+         --STEP3: flush entire table
+         if self:flush() then
+            coroutine.yield()
+         end
+         --at this point, size should be 0, because the table was just flushed
+         newSize = self.size + payload:len()
       end
-            
-      --at this point, whatever is left in payload should be <= flushthreshold
-      local plen = payload:len()
-      if plen == flushthreshold then
-          --case 1: what is left in payload is exactly flushthreshold bytes (boundary case), so flush it
-          table.insert(self.data, payload)
-          self.size = self.size + plen
-          if self:flush() then
-              coroutine.yield()
-          end
-      elseif payload:len() then
-          --case 2: what is left in payload is less than flushthreshold, so just leave it in the table
-          table.insert(self.data, payload)
-          self.size = self.size + plen
-      --else, case 3: nothing left in payload, so do nothing
+
+      --at this point, whatever is left in payload should be < flushThreshold
+      if payload:len() ~= 0 then
+         --leave remaining data in the table
+         table.insert(self.data, payload)
+         self.size = self.size + payload:len()
       end
    end
-
    return newInstance
+
 end
 
 return BufferedConnection

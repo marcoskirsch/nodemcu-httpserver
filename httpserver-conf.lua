@@ -4,12 +4,14 @@
 
 local conf = {}
 
--- Basic Authentication Conf
+-- Configure Basic HTTP Authentication.
 local auth = {}
+-- Set to true if you want to enable.
 auth.enabled = false
-auth.realm = "nodemcu-httpserver" -- displayed in the login dialog users get
-auth.user = "user"
-auth.password = "password" -- PLEASE change this
-conf.auth = auth
+-- Displayed in the login dialog users see before authenticating.
+auth.realm = "nodemcu-httpserver"
+-- Add users and passwords to this table. Do not leave this unchanged if you enable authentication!
+auth.users = {user1 = "password1", user2 = "password2", user3 = "password3"}
 
+conf.auth = auth
 return conf

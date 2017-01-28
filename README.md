@@ -65,12 +65,13 @@ Let the abuse begin.
 
 4. How to use HTTP Basic Authentication.
 
-   Enable and configure HTTP Basic Authentication by editing "httpserver-conf.lua" file.
+   Modify variables in configuration file httpserver-conf.lua in order to enable and to configure usernames/passwords.
+   See comments in that file for more details.
 
    When enabled, HTTP Basic Authentication is global to every file served by the server.
 
    Remember that HTTP Basic Authentication is a very basic authentication protocol, and should not be
-   considered secure if the server is not using encryption, as your username and password travel
+   considered as secure since the server is not using encryption. Username and passwords travel
    in plain text.
 
 ## How to use server-side scripting using your own Lua scripts
