@@ -14,7 +14,13 @@ return function (connection, req, args)
       return header
    end
 
-   print("Error " .. args.code .. ": " .. args.errorString)
+   args.logFunction(connection, "Error " .. args.code .. ": " .. args.errorString)
+
+--   local port, ip = connection:getpeer()
+--   print("FIX", ip .. ":" .. port, "Error " .. args.code .. ": " .. args.errorString)
+--   port = nil
+--   ip = nil
+
    args.headers = args.headers or {}
    connection:send(getHeader(connection, args.code, args.errorString, args.headers, "text/html"))
    connection:send("<html><head><title>" .. args.code .. " - " .. args.errorString .. "</title></head><body><h1>" .. args.code .. " - " .. args.errorString .. "</h1></body></html>\r\n")
