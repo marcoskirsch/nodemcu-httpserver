@@ -11,6 +11,8 @@ for i=1, table.getn(a), 1 do
 	gpio.write(i, gpio.LOW)
 end
 
+node.setcpufreq(node.CPU160MHZ)
+
 local wifiConfig = {}
 
 wifiConfig.mode = wifi.SOFTAP
