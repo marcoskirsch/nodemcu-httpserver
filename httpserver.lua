@@ -145,7 +145,7 @@ return function (port)
                if connectionThreadStatus == "suspended" then
                   -- Not finished sending file, resume.
                   local status, err = coroutine.resume(connectionThread)
-                  if not status then log(connection:getpeer(), "Error: " .. err) end
+                  if not status then log(connection, "Error: " .. err) end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
                   connection:close()
