@@ -21,6 +21,7 @@ Let the abuse begin.
 * Serving .gz compressed files
 * HTTP Basic Authentication
 * Decoding of request bodies in both application/x-www-form-urlencoded and application/json (if cjson is available)
+* Individual error pages based on HTTP status code and file extension
 
 ## How to use
 

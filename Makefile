@@ -20,6 +20,7 @@ LUA_FILES := \
    httpserver-basicauth.lua \
    httpserver-conf.lua \
    httpserver-connection.lua \
+   httpserver-geterrorpage.lua \
    httpserver-error.lua \
    httpserver-header.lua \
    httpserver-request.lua \

@@ -42,16 +42,19 @@ return function (port)
             if not status then log(connection, "Error: "..err) end
          end
 
-         local function handleRequest(connection, req)
+         local function handleRequest(connection, req, handleError)
             collectgarbage()
             local method = req.method
             local uri = req.uri
             local fileServeFunction = nil
 
+            if not allowStatic[method] and not uri.isScript then
+               return handleError(connection, req, 405, "Allow: GET, HEAD")
+            end
+            
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
-               uri.args = {code = 400, errorString = "Bad Request", logFunction = log}
-               fileServeFunction = dofile("httpserver-error.lc")
+               return handleError(connection, req, 404)
             else
                local fileExists = file.open(uri.file, "r")
                file.close()
@@ -69,21 +72,21 @@ return function (port)
                end
 
                if not fileExists then
-                  uri.args = {code = 404, errorString = "Not Found", logFunction = log}
-                  fileServeFunction = dofile("httpserver-error.lc")
+                  return handleError(connection, req, 404)
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
                else
-                  if allowStatic[method] then
-                     uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
-                     fileServeFunction = dofile("httpserver-static.lc")
-                  else
-                     uri.args = {code = 405, errorString = "Method not supported", logFunction = log}
-                     fileServeFunction = dofile("httpserver-error.lc")
-                  end
+                  uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
+                  fileServeFunction = dofile("httpserver-static.lc")
                end
             end
+            print(req)  -- has to be left in to workaround a bug in lua
             startServing(fileServeFunction, connection, req, uri.args)
+         end
+
+         local function handleError(connection, request, code, header)
+            dofile("httpserver-geterrorpage.lua")(connection, request, code, header)
+            handleRequest(connection, request, handleError)
          end
 
          local function onReceive(connection, payload)
@@ -110,6 +113,12 @@ return function (port)
 
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
+            if not req then
+               -- create minimal req to allow geterrorpage to do its work
+               req = {uri = {}}
+               log(connection, "Empty request")
+               return handleError(connection, req, 400)
+            end
             log(connection, req.method, req.request)
             if conf.auth.enabled then
                auth = dofile("httpserver-basicauth.lc")
@@ -117,18 +126,15 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
-               handleRequest(connection, req)
+               handleRequest(connection, req, handleError)
             else
-               local args = {}
-               local fileServeFunction = dofile("httpserver-error.lc")
-               if not user then
-                  args = {code = 401, errorString = "Not Authorized", headers = {auth.authErrorHeader()}, logFunction = log}
-               elseif req.methodIsValid then
-                  args = {code = 501, errorString = "Not Implemented", logFunction = log}
-               else
-                  args = {code = 400, errorString = "Bad Request", logFunction = log}
+               if not user then  -- Not Authorized
+                  return handleError(connection, req, 401, auth.authErrorHeader())
+               elseif req.methodIsValid then  -- Not Implemented
+                  return handleError(connection, req, 501)
+               else  -- Bad Request
+                  return handleError(connection, req, 400)
                end
-               startServing(fileServeFunction, connection, req, args)
             end
          end
 
