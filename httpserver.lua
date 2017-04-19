@@ -85,7 +85,7 @@ return function (port)
          end
 
          local function handleError(connection, request, code, header)
-            dofile("httpserver-geterrorpage.lua")(connection, request, code, header)
+            dofile("httpserver-geterrorpage.lc")(connection, request, code, header)
             handleRequest(connection, request, handleError)
          end
 
