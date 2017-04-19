@@ -3,7 +3,7 @@
 -- Author: Marcos Kirsch
 
 return function (connection, req, args)
-   dofile("httpserver-header.lc")(connection, 200, args.ext, args.isGzipped)
+   dofile("httpserver-header.lc")(connection, req.code or 200, args.ext, args.isGzipped)
    -- Send file in little chunks
    local bytesRemaining = file.list()[args.file]
    -- Chunks larger than 1024 don't work.
