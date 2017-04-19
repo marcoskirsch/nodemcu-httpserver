@@ -112,6 +112,9 @@ return function (request)
    local line = request:sub(1, e - 1)
    local r = {}
    _, i, r.method, r.request = line:find("^([A-Z]+) (.-) HTTP/[1-9]+.[0-9]+$")
+   if not (r.method and r.request) then
+      return nil
+   end
    r.methodIsValid = validateMethod(r.method)
    r.uri = parseUri(r.request)
    r.getRequestData = getRequestData(request)
