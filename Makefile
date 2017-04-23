@@ -12,7 +12,7 @@ NODEMCU-COMMAND=$(NODEMCU-UPLOADER) -b $(SPEED) --start_baud $(SPEED) -p $(PORT)
 ######################################################################
 # End of user config
 ######################################################################
-HTTP_FILES := $(wildcard http/*)
+HTTP_FILES := $(wildcard http/*) $(wildcard error*)
 LUA_FILES := \
    init.lua \
    httpserver.lua \
