@@ -113,6 +113,8 @@ return function (request)
    local r = {}
    _, i, r.method, r.request = line:find("^([A-Z]+) (.-) HTTP/[1-9]+.[0-9]+$")
    if not (r.method and r.request) then
+      --print("invalid request: ")
+      --print(request)
       return nil
    end
    r.methodIsValid = validateMethod(r.method)

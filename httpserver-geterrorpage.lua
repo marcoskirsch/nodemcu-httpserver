@@ -14,7 +14,8 @@ return function(connection, req, code, header)
       end
       -- TODO extend for arbitrary file extensions
       filename = filename..".html"
-
+      print("looking for "..filename)
+      
       -- TODO return filename and extension as we know them both here
       if (file.exists(filename)) then
          return filename
@@ -31,8 +32,8 @@ return function(connection, req, code, header)
    
    --print("uri: ", uri or "nil")
    local errorhandler = getErrorHandler(code,uri.ext) 
-               or getErrorHandler(code)
                or getErrorHandler(uri.ext)
+               or getErrorHandler(code)
                or getErrorHandler()
 
    req.method = "GET"

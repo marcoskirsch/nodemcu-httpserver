@@ -9,6 +9,7 @@ return function (connection, req, args)
    -- Chunks larger than 1024 don't work.
    -- https://github.com/nodemcu/nodemcu-firmware/issues/1075
    local chunkSize = 1024
+   --print("Start sending: ", args.file)
    local fileHandle = file.open(args.file)
    while bytesRemaining > 0 do
       local bytesToRead = 0
@@ -20,7 +21,7 @@ return function (connection, req, args)
       chunk = nil
       collectgarbage()
    end
-   -- print("Finished sending: ", args.file)
+   --print("Finished sending: ", args.file)
    fileHandle:close()
    fileHandle = nil
    collectgarbage()
