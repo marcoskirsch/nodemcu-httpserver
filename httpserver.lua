@@ -114,6 +114,7 @@ return function (port)
             if conf.auth.enabled then
                auth = dofile("httpserver-basicauth.lc")
                user = auth.authenticate(payload) -- authenticate returns nil on failed auth
+               req.user = user -- store authenticated user to req table
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
