@@ -13,6 +13,7 @@ return function (port)
          -- We do it in a separate thread because we need to send in little chunks and wait for the onSent event
          -- before we can send more, or we risk overflowing the mcu's buffer.
          local connectionThread
+         local fileInfo
 
          local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
 
@@ -26,6 +27,10 @@ return function (port)
             end
          end
 
+         local function startServingStatic(connection, req, args)
+            fileInfo = dofile("httpserver-static.lc")(connection, req, args)
+         end
+         
          local function startServing(fileServeFunction, connection, req, args)
             connectionThread = coroutine.create(function(fileServeFunction, bufferedConnection, req, args)
                fileServeFunction(bufferedConnection, req, args)
@@ -34,16 +39,20 @@ return function (port)
                   log(connection, "closing connetion", "no (more) data")
                   connection:close()
                   connectionThread = nil
+                  collectgarbage()
                end
             end)
 
             local BufferedConnectionClass = dofile("httpserver-connection.lc")
             local bufferedConnection = BufferedConnectionClass:new(connection)
+            BufferedConnectionClass = nil
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
             if not status then
                log(connection, "Error: "..err)
                log(connection, "closing connetion", "error")
                connection:close()
+               connectionThread = nil
+               collectgarbage()
             end
          end
 
@@ -80,13 +89,12 @@ return function (port)
                   return handleError(connection, req, 404)
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
+                  startServing(fileServeFunction, connection, req, uri.args)
                else
                   uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
-                  fileServeFunction = dofile("httpserver-static.lc")
+                  startServingStatic(connection, req, uri.args)
                end
             end
-            print(req)  -- has to be left in to workaround a bug in lua
-            startServing(fileServeFunction, connection, req, uri.args)
          end
 
          local function handleError(connection, request, code, header)
@@ -154,13 +162,37 @@ return function (port)
                      log(connection, "Error: "..err)
                      log(connection, "closing connetion", "error")
                      connection:close()
+                     connectionThread = nil
+                     collectgarbage()
                   end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
                   log(connection, "closing connetion","thread is dead")
                   connection:close()
                   connectionThread = nil
+                  collectgarbage()
                end
+            elseif fileInfo then
+               local fileSize = file.list()[fileInfo.file]
+               -- Chunks larger than 1024 don't work.
+               -- https://github.com/nodemcu/nodemcu-firmware/issues/1075
+               local chunkSize = 1024
+               local fileHandle = file.open(fileInfo.file)
+               if fileSize > fileInfo.sent then
+                  fileHandle:seek("set", fileInfo.sent)
+                  local chunk = fileHandle:read(chunkSize)
+                  fileHandle:close()
+                  fileHandle = nil
+                  fileInfo.sent = fileInfo.sent + #chunk
+                  connection:send(chunk)
+                  -- print(fileInfo.file .. ": Sent "..#chunk.. " bytes, " .. fileSize - fileInfo.sent .. " to go.")
+                  chunk = nil
+               else
+                  log(connection, "closing connetion", "Finished sending: "..fileInfo.file)
+                  connection:close()
+                  fileInfo = nil
+               end
+               collectgarbage()
             end
          end
 

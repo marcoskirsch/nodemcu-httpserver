@@ -14,7 +14,7 @@ return function(connection, req, code, header)
       end
       -- TODO extend for arbitrary file extensions
       filename = filename..".html"
-      print("looking for "..filename)
+      -- print("looking for "..filename)
       
       -- TODO return filename and extension as we know them both here
       if (file.exists(filename)) then
