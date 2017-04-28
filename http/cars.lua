@@ -9,6 +9,10 @@ return function (connection, req, args)
       connection:send([===[<figure><img src="cars-mas.jpg" /><figcaption>Maserati</figcaption></figure>]===])
       if nr == "3" then return end
       connection:send([===[<figure><img src="cars-porsche.jpg" /><figcaption>Porsche</figcaption></figure>]===])
+      if nr == "4" then return end
+      connection:send([===[<figure><img src="cars-bugatti.jpg" /><figcaption>Bugatti</figcaption></figure>]===])
+      if nr == "5" then return end
+      connection:send([===[<figure><img src="cars-mercedes.jpg" /><figcaption>Mercedes</figcaption></figure>]===])
    end
 
 
@@ -24,14 +28,20 @@ return function (connection, req, args)
       <h1>Nice cars!</h1>
       <p>
          This page loads "large" images of fancy cars. It is meant to serve as a stress test for nodemcu-httpserver.<br>
-         It works with three embedded images of cars, but the server crashes with four. Edit this file and try it yourself.<br>
+         It works with three embedded images of cars, but the server crashes with four. Select the number of cars you want to see below.<br>
          Whoever manages to modify nodemcu-httpserver to load all four images without crashing wins a prize!
       </p>
       <p>
-         <a href="?n=1">show one car</a> ddd
-         <a href="?n=2">show two cars</a>fff
-         <a href="?n=3">show three cars</a>ggg
-         <a href="?n=4">show four cars</a>hhhh
+         OK I guess I win the prize, as now you can load six cars (maybe even more).<br>
+            Cheers HHHartmann
+      </p>
+      <p>
+         choose: <a href="?n=1">show one car</a>
+         <a href="?n=2">show two cars</a>
+         <a href="?n=3">show three cars</a>
+         <a href="?n=4">show four cars</a>
+         <a href="?n=5">show five cars</a>
+         <a href="?n=6">show six cars</a>
       </p>
    ]===])
 
