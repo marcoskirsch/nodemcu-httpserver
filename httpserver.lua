@@ -13,6 +13,7 @@ return function (port)
          -- We do it in a separate thread because we need to send in little chunks and wait for the onSent event
          -- before we can send more, or we risk overflowing the mcu's buffer.
          local connectionThread
+         local fileInfo
 
          local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
 
@@ -26,32 +27,48 @@ return function (port)
             end
          end
 
+         local function startServingStatic(connection, req, args)
+            fileInfo = dofile("httpserver-static.lc")(connection, req, args)
+         end
+         
          local function startServing(fileServeFunction, connection, req, args)
             connectionThread = coroutine.create(function(fileServeFunction, bufferedConnection, req, args)
                fileServeFunction(bufferedConnection, req, args)
                -- The bufferedConnection may still hold some data that hasn't been sent. Flush it before closing.
                if not bufferedConnection:flush() then
+                  log(connection, "closing connetion", "no (more) data")
                   connection:close()
                   connectionThread = nil
+                  collectgarbage()
                end
             end)
 
             local BufferedConnectionClass = dofile("httpserver-connection.lc")
             local bufferedConnection = BufferedConnectionClass:new(connection)
+            BufferedConnectionClass = nil
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
-            if not status then log(connection, "Error: "..err) end
+            if not status then
+               log(connection, "Error: "..err)
+               log(connection, "closing connetion", "error")
+               connection:close()
+               connectionThread = nil
+               collectgarbage()
+            end
          end
 
-         local function handleRequest(connection, req)
+         local function handleRequest(connection, req, handleError)
             collectgarbage()
             local method = req.method
             local uri = req.uri
             local fileServeFunction = nil
 
+            if not allowStatic[method] and not uri.isScript then
+               return handleError(connection, req, 405, "Allow: GET, HEAD")
+            end
+            
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
-               uri.args = {code = 400, errorString = "Bad Request", logFunction = log}
-               fileServeFunction = dofile("httpserver-error.lc")
+               return handleError(connection, req, 404)
             else
                local fileExists = file.open(uri.file, "r")
                file.close()
@@ -69,21 +86,20 @@ return function (port)
                end
 
                if not fileExists then
-                  uri.args = {code = 404, errorString = "Not Found", logFunction = log}
-                  fileServeFunction = dofile("httpserver-error.lc")
+                  return handleError(connection, req, 404)
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
+                  startServing(fileServeFunction, connection, req, uri.args)
                else
-                  if allowStatic[method] then
-                     uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
-                     fileServeFunction = dofile("httpserver-static.lc")
-                  else
-                     uri.args = {code = 405, errorString = "Method not supported", logFunction = log}
-                     fileServeFunction = dofile("httpserver-error.lc")
-                  end
+                  uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
+                  startServingStatic(connection, req, uri.args)
                end
             end
-            startServing(fileServeFunction, connection, req, uri.args)
+         end
+
+         local function handleError(connection, request, code, header)
+            dofile("httpserver-geterrorpage.lc")(connection, request, code, header)
+            handleRequest(connection, request, handleError)
          end
 
          local function onReceive(connection, payload)
@@ -110,6 +126,12 @@ return function (port)
 
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
+            if not req then
+               -- create minimal req to allow geterrorpage to do its work
+               req = {uri = {}}
+               log(connection, "Empty request")
+               return handleError(connection, req, 400)
+            end
             log(connection, req.method, req.request)
             if conf.auth.enabled then
                auth = dofile("httpserver-basicauth.lc")
@@ -117,18 +139,15 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
-               handleRequest(connection, req)
+               handleRequest(connection, req, handleError)
             else
-               local args = {}
-               local fileServeFunction = dofile("httpserver-error.lc")
-               if not user then
-                  args = {code = 401, errorString = "Not Authorized", headers = {auth.authErrorHeader()}, logFunction = log}
-               elseif req.methodIsValid then
-                  args = {code = 501, errorString = "Not Implemented", logFunction = log}
-               else
-                  args = {code = 400, errorString = "Bad Request", logFunction = log}
+               if not user then  -- Not Authorized
+                  return handleError(connection, req, 401, auth.authErrorHeader())
+               elseif req.methodIsValid then  -- Not Implemented
+                  return handleError(connection, req, 501)
+               else  -- Bad Request
+                  return handleError(connection, req, 400)
                end
-               startServing(fileServeFunction, connection, req, args)
             end
          end
 
@@ -139,16 +158,46 @@ return function (port)
                if connectionThreadStatus == "suspended" then
                   -- Not finished sending file, resume.
                   local status, err = coroutine.resume(connectionThread)
-                  if not status then log(connection:getpeer(), "Error: " .. err) end
+                  if not status then
+                     log(connection, "Error: "..err)
+                     log(connection, "closing connetion", "error")
+                     connection:close()
+                     connectionThread = nil
+                     collectgarbage()
+                  end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
+                  log(connection, "closing connetion","thread is dead")
                   connection:close()
                   connectionThread = nil
+                  collectgarbage()
                end
+            elseif fileInfo then
+               local fileSize = file.list()[fileInfo.file]
+               -- Chunks larger than 1024 don't work.
+               -- https://github.com/nodemcu/nodemcu-firmware/issues/1075
+               local chunkSize = 1024
+               local fileHandle = file.open(fileInfo.file)
+               if fileSize > fileInfo.sent then
+                  fileHandle:seek("set", fileInfo.sent)
+                  local chunk = fileHandle:read(chunkSize)
+                  fileHandle:close()
+                  fileHandle = nil
+                  fileInfo.sent = fileInfo.sent + #chunk
+                  connection:send(chunk)
+                  -- print(fileInfo.file .. ": Sent "..#chunk.. " bytes, " .. fileSize - fileInfo.sent .. " to go.")
+                  chunk = nil
+               else
+                  log(connection, "closing connetion", "Finished sending: "..fileInfo.file)
+                  connection:close()
+                  fileInfo = nil
+               end
+               collectgarbage()
             end
          end
 
          local function onDisconnect(connection, payload)
+            print("disconnected")
             if connectionThread then
                connectionThread = nil
                collectgarbage()

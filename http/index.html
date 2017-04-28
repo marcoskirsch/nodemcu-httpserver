@@ -21,7 +21,7 @@
    <ul>
       <li><a href="index.html">Index</a>: This page (static)</li>
       <li><a href="hello_world.txt">A text file</a>: Simple text, to verify MIME type is ok. (static)</li>
-      <li><a href="cars.html">Nice cars</a>: Stress test, loads several "large" images. Makes the chip panic and restart :( (static)</li>
+      <li><a href="cars.lua">Nice cars</a>: Stress test, loads several "large" images. Makes the chip panic and restart :( (dynamic to change number of cars)</li>
       <li><a href="zipped.html">Zipped</a>: File is actually saved as zipped.html.gz. A compressed file! (static but gzipped)</li>
       <li><a href="zipped.html.gz">Zipped</a>: Same exact file as served above. Server is smart enough to treat the .gz extension correctly (static but gzipped)</li>
       <li><a href="args.lua">Arguments</a>: Parses arguments passed in the URL and prints them. (Lua)</li>
@@ -30,7 +30,9 @@
       <li><a href="node_info.lua">NodeMCU info</a>: Shows some basic NodeMCU(Lua)</li>
       <li><a href="file_list.lua">List all server files</a>: Displays a list of all the server files. (Lua)</li>
       <li><a href="upload.html">Upload</a>: Update, remove, list files on the server. Beware security implications. By <a href="https://github.com/ATAMAH">ATAMAH</a>.</li>
-      <li><a href="foo.html">Foo</a>: A file that doesn't exist. Should error (404 error)</li>
+      <li><a href="foo.html">Foo</a>: A file that doesn't exist. Should fail using fallback error handler. You also could define a common 404 error handler (404 error Not Found)</li>
+      <li><a href="foo.pdf">Foo.pdf</a>: A file that doesn't exist. Should fail using error handler for not found pdf files (404 error Not Found)</li>
+      <li><a href="foo.jpg">Foo.jpg</a>: A file that doesn't exist. Should fail using general error handler for jpg files (404 error Not Found)</li>
    </ul>
 </body>
 </html>

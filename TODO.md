@@ -4,3 +4,4 @@
 * Need PUT example. How?
 * Rename args.lua to get.lua, so it matches post.lua convention.
 * How can I test the whole JSON post thing?
+* Have more flexible error handling

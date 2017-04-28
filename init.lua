@@ -68,6 +68,8 @@ local serverFiles = {
    'httpserver-basicauth.lua',
    'httpserver-conf.lua',
    'httpserver-connection.lua',
+   'httpserver-buffer.lua',
+   'httpserver-geterrorpage.lua',
    'httpserver-error.lua',
    'httpserver-header.lua',
    'httpserver-request.lua',
