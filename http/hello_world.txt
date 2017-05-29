@@ -1,0 +1,8 @@
+Hello World!
+If server were sending this as HTML, your browser wouldn't render this in its own line.
+Here are some translations. This file is encoded as UTF-8. Let's see if they look ok:
+   ¡Hola mundo!
+   שלום עולם
+   สวัสดีโลก!
+   أهلاً بالعالم
+

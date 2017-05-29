@@ -20,7 +20,7 @@ return function (connection, req, args)
       chunk = nil
       collectgarbage()
    end
-   print("Finished sending: ", args.file)
+   -- print("Finished sending: ", args.file)
    fileHandle:close()
    fileHandle = nil
    collectgarbage()

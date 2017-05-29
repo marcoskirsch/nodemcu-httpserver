@@ -16,6 +16,16 @@ return function (port)
 
          local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
 
+         -- Pretty log function.
+         local function log(connection, msg, optionalMsg)
+            local port, ip = connection:getpeer()
+            if(optionalMsg == nil) then
+               print(ip .. ":" .. port, msg)
+            else
+               print(ip .. ":" .. port, msg, optionalMsg)
+            end
+         end
+
          local function startServing(fileServeFunction, connection, req, args)
             connectionThread = coroutine.create(function(fileServeFunction, bufferedConnection, req, args)
                fileServeFunction(bufferedConnection, req, args)
@@ -29,9 +39,7 @@ return function (port)
             local BufferedConnectionClass = dofile("httpserver-connection.lc")
             local bufferedConnection = BufferedConnectionClass:new(connection)
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
-            if not status then
-               print("Error: ", err)
-            end
+            if not status then log(connection, "Error: "..err) end
          end
 
          local function handleRequest(connection, req)
@@ -42,7 +50,7 @@ return function (port)
 
             if #(uri.file) > 32 then
                -- nodemcu-firmware cannot handle long filenames.
-               uri.args = {code = 400, errorString = "Bad Request"}
+               uri.args = {code = 400, errorString = "Bad Request", logFunction = log}
                fileServeFunction = dofile("httpserver-error.lc")
             else
                local fileExists = file.open(uri.file, "r")
@@ -61,7 +69,7 @@ return function (port)
                end
 
                if not fileExists then
-                  uri.args = {code = 404, errorString = "Not Found"}
+                  uri.args = {code = 404, errorString = "Not Found", logFunction = log}
                   fileServeFunction = dofile("httpserver-error.lc")
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
@@ -70,7 +78,7 @@ return function (port)
                      uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
                      fileServeFunction = dofile("httpserver-static.lc")
                   else
-                     uri.args = {code = 405, errorString = "Method not supported"}
+                     uri.args = {code = 405, errorString = "Method not supported", logFunction = log}
                      fileServeFunction = dofile("httpserver-error.lc")
                   end
                end
@@ -102,7 +110,7 @@ return function (port)
 
             -- parse payload and decide what to serve.
             local req = dofile("httpserver-request.lc")(payload)
-            print(req.method .. ": " .. req.request)
+            log(connection, req.method, req.request)
             if conf.auth.enabled then
                auth = dofile("httpserver-basicauth.lc")
                user = auth.authenticate(payload) -- authenticate returns nil on failed auth
@@ -114,11 +122,11 @@ return function (port)
                local args = {}
                local fileServeFunction = dofile("httpserver-error.lc")
                if not user then
-                  args = {code = 401, errorString = "Not Authorized", headers = {auth.authErrorHeader()}}
+                  args = {code = 401, errorString = "Not Authorized", headers = {auth.authErrorHeader()}, logFunction = log}
                elseif req.methodIsValid then
-                  args = {code = 501, errorString = "Not Implemented"}
+                  args = {code = 501, errorString = "Not Implemented", logFunction = log}
                else
-                  args = {code = 400, errorString = "Bad Request"}
+                  args = {code = 400, errorString = "Bad Request", logFunction = log}
                end
                startServing(fileServeFunction, connection, req, args)
             end
@@ -131,9 +139,7 @@ return function (port)
                if connectionThreadStatus == "suspended" then
                   -- Not finished sending file, resume.
                   local status, err = coroutine.resume(connectionThread)
-                  if not status then
-                     print(err)
-                  end
+                  if not status then log(connection:getpeer(), "Error: " .. err) end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
                   connection:close()

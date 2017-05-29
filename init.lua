@@ -2,23 +2,27 @@
 
 local wifiConfig = {}
 
--- wifi.STATION         -- station: join a WiFi network
--- wifi.SOFTAP          -- access point: create a WiFi network
--- wifi.wifi.STATIONAP  -- both station and access point
+-- Possible modes:   wifi.STATION       : station: join a WiFi network
+--                   wifi.SOFTAP        : access point: create a WiFi network
+--                   wifi.wifi.STATIONAP: both station and access point
 wifiConfig.mode = wifi.STATION
 
-wifiConfig.accessPointConfig = {}
-wifiConfig.accessPointConfig.ssid = "ESP-"..node.chipid()   -- Name of the SSID you want to create
-wifiConfig.accessPointConfig.pwd = "ESP-"..node.chipid()    -- WiFi password - at least 8 characters
+if (wifiConfig.mode == wifi.SOFTAP) or (wifiConfig.mode == wifi.STATIONAP) then
+   wifiConfig.accessPointConfig = {}
+   wifiConfig.accessPointConfig.ssid = "ESP-"..node.chipid()   -- Name of the SSID you want to create
+   wifiConfig.accessPointConfig.pwd = "ESP-"..node.chipid()    -- WiFi password - at least 8 characters
 
-wifiConfig.accessPointIpConfig = {}
-wifiConfig.accessPointIpConfig.ip = "192.168.111.1"
-wifiConfig.accessPointIpConfig.netmask = "255.255.255.0"
-wifiConfig.accessPointIpConfig.gateway = "192.168.111.1"
+   wifiConfig.accessPointIpConfig = {}
+   wifiConfig.accessPointIpConfig.ip = "192.168.111.1"
+   wifiConfig.accessPointIpConfig.netmask = "255.255.255.0"
+   wifiConfig.accessPointIpConfig.gateway = "192.168.111.1"
+end
 
-wifiConfig.stationPointConfig = {}
-wifiConfig.stationPointConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
-wifiConfig.stationPointConfig.pwd =  ""                -- Password for the WiFi network
+if (wifiConfig.mode == wifi.STATION) or (wifiConfig.mode == wifi.STATIONAP) then
+   wifiConfig.stationConfig = {}
+   wifiConfig.stationConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
+   wifiConfig.stationConfig.pwd =  ""                -- Password for the WiFi network
+end
 
 -- Tell the chip to connect to the access point
 
@@ -30,9 +34,10 @@ if (wifiConfig.mode == wifi.SOFTAP) or (wifiConfig.mode == wifi.STATIONAP) then
     wifi.ap.config(wifiConfig.accessPointConfig)
     wifi.ap.setip(wifiConfig.accessPointIpConfig)
 end
+
 if (wifiConfig.mode == wifi.STATION) or (wifiConfig.mode == wifi.STATIONAP) then
     print('Client MAC: ',wifi.sta.getmac())
-    wifi.sta.config(wifiConfig.stationPointConfig.ssid, wifiConfig.stationPointConfig.pwd, 1)
+    wifi.sta.config(wifiConfig.stationConfig.ssid, wifiConfig.stationConfig.pwd, 1)
 end
 
 print('chip: ',node.chipid())
@@ -42,6 +47,7 @@ wifiConfig = nil
 collectgarbage()
 
 -- End WiFi configuration
+
 
 -- Compile server code and remove original .lua files.
 -- This only happens the first time after server .lua files are uploaded.
@@ -73,10 +79,10 @@ compileAndRemoveIfNeeded = nil
 serverFiles = nil
 collectgarbage()
 
--- Connect to the WiFi access point.
--- Once the device is connected, start the HTTP server.
 
-startServer = function(ip, hostname)
+-- Function for starting the server.
+-- If you compiled the mdns module, then it will register the server with that name.
+local startServer = function(ip, hostname)
    local serverPort = 80
    if (dofile("httpserver.lc")(serverPort)) then
       print("nodemcu-httpserver running at:")
@@ -88,34 +94,39 @@ startServer = function(ip, hostname)
    end
 end
 
+
 if (wifi.getmode() == wifi.STATION) or (wifi.getmode() == wifi.STATIONAP) then
-   local joinCounter = 0
-   local joinMaxAttempts = 5
-   tmr.alarm(0, 3000, 1, function()
+
+   -- Connect to the WiFi access point and start server once connected.
+   -- If the server loses connectivity, server will restart.
+   wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(args)
+      print("Connected to WiFi Access Point. Got IP: " .. args["IP"])
+      startServer(args["IP"], "nodemcu")
+      wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(args)
+         print("Lost connectivity! Restarting...")
+         node.restart()
+      end)
+   end)
+
+   -- What if after a while (30 seconds) we didn't connect? Restart and keep trying.
+   local watchdogTimer = tmr.create()
+   watchdogTimer:register(30000, tmr.ALARM_SINGLE, function (watchdogTimer)
       local ip = wifi.sta.getip()
       if (not ip) then ip = wifi.ap.getip() end
-      if ip == nil and joinCounter < joinMaxAttempts then
-         print('Connecting to WiFi Access Point ...')
-         joinCounter = joinCounter + 1
+      if ip == nil then
+         print("No IP after a while. Restarting...")
+         node.restart()
       else
-         if joinCounter == joinMaxAttempts then
-            print('Failed to connect to WiFi Access Point.')
-         else
-            print("IP = " .. ip)
-            if (not not wifi.sta.getip()) or (not not wifi.ap.getip()) then
-               -- Second parameter is for mDNS (aka Zeroconf aka Bonjour) registration.
-               -- If the mdns module is compiled in the firmware, advertise the server with this name.
-               -- If no mdns is compiled, then parameter is ignored.
-               startServer(ip, "nodemcu")
-            end
-         end
-         tmr.stop(0)
-         joinCounter = nil
-         joinMaxAttempts = nil
-         collectgarbage()
+         --print("Successfully got IP. Good, no need to restart.")
+         watchdogTimer:unregister()
       end
    end)
+   watchdogTimer:start()
+
+
 else
-   startServer()
+
+   startServer(wifi.ap.getip(), "nodemcu")
+
 end
 

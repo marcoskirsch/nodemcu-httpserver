@@ -25,6 +25,10 @@ function BufferedConnection:new(connection)
       return false
    end
 
+   function newInstance:getpeer()
+      return self.connection:getpeer()
+   end
+
    function newInstance:send(payload)
       local flushThreshold = 1400
       local newSize = self.size + payload:len()
