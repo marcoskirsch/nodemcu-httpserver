@@ -20,8 +20,8 @@ end
 
 if (wifiConfig.mode == wifi.STATION) or (wifiConfig.mode == wifi.STATIONAP) then
    wifiConfig.stationConfig = {}
-   wifiConfig.stationConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
-   wifiConfig.stationConfig.pwd =  ""                -- Password for the WiFi network
+   wifiConfig.stationConfig.ssid = "Kirsch Extreme"        -- Name of the WiFi network you want to join
+   wifiConfig.stationConfig.pwd =  "1151511515"                -- Password for the WiFi network
 end
 
 -- Tell the chip to connect to the access point
@@ -101,7 +101,7 @@ if (wifi.getmode() == wifi.STATION) or (wifi.getmode() == wifi.STATIONAP) then
    -- If the server loses connectivity, server will restart.
    wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(args)
       print("Connected to WiFi Access Point. Got IP: " .. args["IP"])
-      startServer(args["IP"], "nodemcu")
+      startServer(args["IP"], "garage")
       wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(args)
          print("Lost connectivity! Restarting...")
          node.restart()
