@@ -117,7 +117,7 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
-               handleRequest(connection, req)
+               handleRequest(connection, req, handleError)
             else
                local args = {}
                local fileServeFunction = dofile("httpserver-error.lc")
