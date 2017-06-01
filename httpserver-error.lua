@@ -3,7 +3,6 @@
 -- Author: Marcos Kirsch, Gregor Hartmann
 
 return function (connection, req, args)
-   req.code = args.code
-   local statusString = dofile("httpserver-header.lc")(connection, req.code, "html", false, req.headers)
-   connection:send("<html><head><title>" .. req.code .. " - " .. statusString .. "</title></head><body><h1>" .. req.code .. " - " .. statusString .. "</h1></body></html>\r\n")
+   local statusString = dofile("httpserver-header.lc")(connection, args.code, "html", false, req.headers)
+   connection:send("<html><head><title>" .. args.code .. " - " .. statusString .. "</title></head><body><h1>" .. args.code .. " - " .. statusString .. "</h1></body></html>\r\n")
 end
