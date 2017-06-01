@@ -165,7 +165,8 @@ return function (port)
          end
 
          local function onDisconnect(connection, payload)
-            print("disconnected")
+-- this should rather be a log call, but log is not available here
+--            print("disconnected")
             if connectionThread then
                connectionThread = nil
                collectgarbage()
