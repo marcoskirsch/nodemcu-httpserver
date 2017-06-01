@@ -31,7 +31,7 @@ return function (port)
                fileServeFunction(bufferedConnection, req, args)
                -- The bufferedConnection may still hold some data that hasn't been sent. Flush it before closing.
                if not bufferedConnection:flush() then
-                  log(connection, "closing connetion", "no (more) data")
+                  log(connection, "closing connection", "no (more) data")
                   connection:close()
                   connectionThread = nil
                   collectgarbage()
@@ -43,7 +43,7 @@ return function (port)
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
             if not status then
                log(connection, "Error: "..err)
-               log(connection, "closing connetion", "error")
+               log(connection, "closing connection", "error")
                connection:close()
                connectionThread = nil
                collectgarbage()
@@ -149,14 +149,14 @@ return function (port)
                   local status, err = coroutine.resume(connectionThread)
                   if not status then
                      log(connection, "Error: "..err)
-                     log(connection, "closing connetion", "error")
+                     log(connection, "closing connection", "error")
                      connection:close()
                      connectionThread = nil
                      collectgarbage()
                   end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
-                  log(connection, "closing connetion","thread is dead")
+                  log(connection, "closing connection","thread is dead")
                   connection:close()
                   connectionThread = nil
                   collectgarbage()
