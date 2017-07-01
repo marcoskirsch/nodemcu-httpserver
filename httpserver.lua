@@ -31,15 +31,23 @@ return function (port)
                fileServeFunction(bufferedConnection, req, args)
                -- The bufferedConnection may still hold some data that hasn't been sent. Flush it before closing.
                if not bufferedConnection:flush() then
+                  log(connection, "closing connection", "no (more) data")
                   connection:close()
                   connectionThread = nil
+                  collectgarbage()
                end
             end)
 
             local BufferedConnectionClass = dofile("httpserver-connection.lc")
             local bufferedConnection = BufferedConnectionClass:new(connection)
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
-            if not status then log(connection, "Error: "..err) end
+            if not status then
+               log(connection, "Error: "..err)
+               log(connection, "closing connection", "error")
+               connection:close()
+               connectionThread = nil
+               collectgarbage()
+            end
          end
 
          local function handleRequest(connection, req)
@@ -117,7 +125,7 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
-               handleRequest(connection, req)
+               handleRequest(connection, req, handleError)
             else
                local args = {}
                local fileServeFunction = dofile("httpserver-error.lc")
@@ -139,16 +147,26 @@ return function (port)
                if connectionThreadStatus == "suspended" then
                   -- Not finished sending file, resume.
                   local status, err = coroutine.resume(connectionThread)
-                  if not status then log(connection:getpeer(), "Error: " .. err) end
+                  if not status then
+                     log(connection, "Error: "..err)
+                     log(connection, "closing connection", "error")
+                     connection:close()
+                     connectionThread = nil
+                     collectgarbage()
+                  end
                elseif connectionThreadStatus == "dead" then
                   -- We're done sending file.
+                  log(connection, "closing connection","thread is dead")
                   connection:close()
                   connectionThread = nil
+                  collectgarbage()
                end
             end
          end
 
          local function onDisconnect(connection, payload)
+-- this should rather be a log call, but log is not available here
+--            print("disconnected")
             if connectionThread then
                connectionThread = nil
                collectgarbage()
