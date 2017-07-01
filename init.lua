@@ -4,7 +4,7 @@ local wifiConfig = {}
 
 -- Possible modes:   wifi.STATION       : station: join a WiFi network
 --                   wifi.SOFTAP        : access point: create a WiFi network
---                   wifi.wifi.STATIONAP: both station and access point
+--                   wifi.STATIONAP     : both station and access point
 wifiConfig.mode = wifi.STATION
 
 if (wifiConfig.mode == wifi.SOFTAP) or (wifiConfig.mode == wifi.STATIONAP) then
@@ -20,8 +20,8 @@ end
 
 if (wifiConfig.mode == wifi.STATION) or (wifiConfig.mode == wifi.STATIONAP) then
    wifiConfig.stationConfig = {}
-   wifiConfig.stationConfig.ssid = "Kirsch Extreme"        -- Name of the WiFi network you want to join
-   wifiConfig.stationConfig.pwd =  "1151511515"                -- Password for the WiFi network
+   wifiConfig.stationConfig.ssid = "Internet"        -- Name of the WiFi network you want to join
+   wifiConfig.stationConfig.pwd =  ""                -- Password for the WiFi network
 end
 
 -- Tell the chip to connect to the access point
