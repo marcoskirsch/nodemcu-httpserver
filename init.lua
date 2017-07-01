@@ -4,7 +4,7 @@ local wifiConfig = {}
 
 -- Possible modes:   wifi.STATION       : station: join a WiFi network
 --                   wifi.SOFTAP        : access point: create a WiFi network
---                   wifi.wifi.STATIONAP: both station and access point
+--                   wifi.STATIONAP     : both station and access point
 wifiConfig.mode = wifi.STATION
 
 if (wifiConfig.mode == wifi.SOFTAP) or (wifiConfig.mode == wifi.STATIONAP) then
