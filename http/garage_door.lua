@@ -2,11 +2,19 @@
 -- Part of nodemcu-httpserver, example.
 -- Author: Marcos Kirsch
 
+--[[
+   This example assumed you have a Wemos D1 Pro to control a two-door garage.
+   For each garage door, a Wemos relay shield is used to simulate a button (connect relay in
+   parallel with the actual physical button) and a reed switch is used in order to know
+   whether a door is currently open or closed (install switch so that it is in the closed
+   position when your garage door is closed).
+
+   You can configure which GPIO pins you use for each function by modifying variable
+   pinConfig below.
+]]--
+
 local function pushTheButton(connection, pinConfig)
    -- push the button!
-   -- The hardware in this case is a Wemos D1 Pro with two relay shields.
-   -- The first relay is controlled with D1.
-   -- The second one was modified to be controlled with D2.
    gpio.write(pinConfig["controlPin"], gpio.HIGH)
    gpio.mode(pinConfig["controlPin"], gpio.OUTPUT, gpio.FLOAT)
    tmr.delay(300000) -- in microseconds
@@ -48,6 +56,7 @@ end
 
 
 local function openDoor(connection, pinConfig)
+   -- errors if door is already open.
    local doorStatus = readDoorStatus(pinConfig)
    if doorStatus == 'open' then
       return false
@@ -59,6 +68,7 @@ end
 
 
 local function closeDoor(connection, pinConfig)
+   -- errors if door is already closed.
    local doorStatus = readDoorStatus(pinConfig)
    if doorStatus == 'closed' then
       return false
@@ -71,20 +81,29 @@ end
 
 return function (connection, req, args)
 
-   -- The values for the configuration depend on how your Wemo D1 mini Pro is wired.
-   -- In this example, there are two doors.
-   -- Each door uses a pin to control a relay that mimics the push button on the garage door
-   -- and another pin connected to a reed relay (the other wire of the relay goes to GND) to
-   -- detect if the door is open or closed.
+   -- The values for pinConfig depend on how your Wemo D1 mini Pro is wired.
+   -- Adjust as needed.
    pinConfig = {}
    pinConfig["1"] = {}
    pinConfig["1"]["door"] = 1
-   pinConfig["1"]["controlPin"] = 1
+   pinConfig["1"]["controlPin"] = 2
    pinConfig["1"]["statusPin"] = 5
    pinConfig["2"] = {}
    pinConfig["2"]["door"] = 2
-   pinConfig["2"]["controlPin"] = 2
+   pinConfig["2"]["controlPin"] = 1
    pinConfig["2"]["statusPin"] = 6
+
+   -- Make this work with both GET and POST methods.
+   -- In the POST case, we need to extract the arguments.
+   print("method is " .. req.method)
+   if req.method == "POST" then
+      local rd = req.getRequestData()
+      for name, value in pairs(rd) do
+         args[name] = value
+      end
+   end
+
+   -- validate door input
 
    if args.door == nil then
       sendResponse(connection, 400, -1, args.action, pinConfig[args.door], "No door specified")
@@ -96,11 +115,13 @@ return function (connection, req, args)
       return
    end
 
+   -- perform action
+
    if args.action == "open" then
       if(openDoor(connection, pinConfig[args.door])) then
          sendResponse(connection, 200, 0, args.action, pinConfig[args.door], "Door opened")
       else
-         sendResponse(connection, 400, -3, args.action, pinConfig[args.door], "Door was already open")
+         sendResponse(connection, 400, -3, args.action, pinConfig[args.door], "Door is already open")
       end
       return
    end
@@ -109,8 +130,14 @@ return function (connection, req, args)
       if(closeDoor(connection, pinConfig[args.door])) then
          sendResponse(connection, 200, 0, args.action, pinConfig[args.door], "Door closed")
       else
-         sendResponse(connection, 400, -4, args.action, pinConfig[args.door], "Door was already closed")
+         sendResponse(connection, 400, -4, args.action, pinConfig[args.door], "Door is already closed")
       end
+      return
+   end
+
+   if args.action == "toggle" then
+      pushTheButton(connection, pinConfig[args.door])
+      sendResponse(connection, 200, 0, args.action, pinConfig[args.door], "Pushed the button")
       return
    end
 
@@ -118,6 +145,8 @@ return function (connection, req, args)
       sendStatus(connection, pinConfig[args.door])
       return
    end
+
+   -- everything else is error
 
    sendResponse(connection, 400, -5, args.action, pinConfig[args.door], "Bad action")
 
