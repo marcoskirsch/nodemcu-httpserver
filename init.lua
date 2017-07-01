@@ -101,7 +101,7 @@ if (wifi.getmode() == wifi.STATION) or (wifi.getmode() == wifi.STATIONAP) then
    -- If the server loses connectivity, server will restart.
    wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(args)
       print("Connected to WiFi Access Point. Got IP: " .. args["IP"])
-      startServer(args["IP"], "garage")
+      startServer(args["IP"], "nodemcu")
       wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(args)
          print("Lost connectivity! Restarting...")
          node.restart()
