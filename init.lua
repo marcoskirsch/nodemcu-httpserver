@@ -48,85 +48,10 @@ collectgarbage()
 
 -- End WiFi configuration
 
-
--- Compile server code and remove original .lua files.
--- This only happens the first time after server .lua files are uploaded.
-
-local compileAndRemoveIfNeeded = function(f)
-   if file.open(f) then
-      file.close()
-      print('Compiling:', f)
-      node.compile(f)
-      file.remove(f)
-      collectgarbage()
-   end
-end
-
-local serverFiles = {
-   'httpserver.lua',
-   'httpserver-b64decode.lua',
-   'httpserver-basicauth.lua',
-   'httpserver-conf.lua',
-   'httpserver-connection.lua',
-   'httpserver-error.lua',
-   'httpserver-header.lua',
-   'httpserver-request.lua',
-   'httpserver-static.lua',
-}
-for i, f in ipairs(serverFiles) do compileAndRemoveIfNeeded(f) end
-
-compileAndRemoveIfNeeded = nil
-serverFiles = nil
-collectgarbage()
-
-
--- Function for starting the server.
--- If you compiled the mdns module, then it will register the server with that name.
-local startServer = function(ip, hostname)
-   local serverPort = 80
-   if (dofile("httpserver.lc")(serverPort)) then
-      print("nodemcu-httpserver running at:")
-      print("   http://" .. ip .. ":" ..  serverPort)
-      if (mdns) then
-         mdns.register(hostname, { description="A tiny server", service="http", port=serverPort, location='Earth' })
-         print ('   http://' .. hostname .. '.local.:' .. serverPort)
-      end
-   end
-end
-
-
-if (wifi.getmode() == wifi.STATION) or (wifi.getmode() == wifi.STATIONAP) then
-
-   -- Connect to the WiFi access point and start server once connected.
-   -- If the server loses connectivity, server will restart.
-   wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(args)
-      print("Connected to WiFi Access Point. Got IP: " .. args["IP"])
-      startServer(args["IP"], "nodemcu")
-      wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(args)
-         print("Lost connectivity! Restarting...")
-         node.restart()
-      end)
-   end)
-
-   -- What if after a while (30 seconds) we didn't connect? Restart and keep trying.
-   local watchdogTimer = tmr.create()
-   watchdogTimer:register(30000, tmr.ALARM_SINGLE, function (watchdogTimer)
-      local ip = wifi.sta.getip()
-      if (not ip) then ip = wifi.ap.getip() end
-      if ip == nil then
-         print("No IP after a while. Restarting...")
-         node.restart()
-      else
-         --print("Successfully got IP. Good, no need to restart.")
-         watchdogTimer:unregister()
-      end
-   end)
-   watchdogTimer:start()
-
-
+-- Start nodemcu-httpsertver
+if file.exists("httpserver-init.lc") then
+   dofile("httpserver-init.lc")
 else
-
-   startServer(wifi.ap.getip(), "nodemcu")
-
+   dofile("httpserver-init.lua")
 end
 
