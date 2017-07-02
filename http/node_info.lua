@@ -1,5 +1,15 @@
-local function sendAttr(connection, attr, val)
-   connection:send("<li><b>".. attr .. ":</b> " .. (val or "nil") .. "<br></li>\n")
+local function sendAttr(connection, attr, val, unit)
+   --Avoid error when Nil is in atrib=val pair.
+   if not attr or not val then
+      return
+   else
+      if unit then
+         unit = ' ' .. unit
+   else
+      unit = ''
+   end
+      connection:send("<li><b>".. attr .. ":</b> " .. val .. unit .. "<br></li>\n")
+   end
 end
 
 return function (connection, req, args)
@@ -9,12 +19,14 @@ return function (connection, req, args)
    sendAttr(connection, "NodeMCU version"       , majorVer.."."..minorVer.."."..devVer)
    sendAttr(connection, "chipid"                , chipid)
    sendAttr(connection, "flashid"               , flashid)
-   sendAttr(connection, "flashsize"             , flashsize)
+   sendAttr(connection, "flashsize"             , flashsize, 'Kb')
    sendAttr(connection, "flashmode"             , flashmode)
-   sendAttr(connection, "flashspeed"            , flashspeed)
-   sendAttr(connection, "node.heap()"           , node.heap())
-   sendAttr(connection, 'Memory in use (KB)'    , collectgarbage("count"))
-   sendAttr(connection, 'IP address'            , wifi.sta.getip())
+   sendAttr(connection, "flashspeed"            , flashspeed / 1000000 , 'MHz')
+   sendAttr(connection, "heap free"             , node.heap() , 'bytes')
+   sendAttr(connection, 'Memory in use'         , collectgarbage("count") , 'KB')
+   ip, subnetMask = wifi.sta.getip()
+   sendAttr(connection, 'Station IP address'    , ip)
+   sendAttr(connection, 'Station subnet mask'   , subnetMask)
    sendAttr(connection, 'MAC address'           , wifi.sta.getmac())
    connection:send('</ul></body></html>')
 end
