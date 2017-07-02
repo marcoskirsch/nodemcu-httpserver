@@ -1,5 +1,10 @@
 local function sendAttr(connection, attr, val)
-   connection:send("<li><b>".. attr .. ":</b> " .. (val or "nil") .. "<br></li>\n")
+   --Avoid error when Nil is in atrib=val pair.
+   if not attr or not val then
+      return
+   else
+      connection:send("<li><b>".. attr .. ":</b> " .. val .. "<br></li>\n")
+   end
 end
 
 return function (connection, req, args)
@@ -9,12 +14,12 @@ return function (connection, req, args)
    sendAttr(connection, "NodeMCU version"       , majorVer.."."..minorVer.."."..devVer)
    sendAttr(connection, "chipid"                , chipid)
    sendAttr(connection, "flashid"               , flashid)
-   sendAttr(connection, "flashsize"             , flashsize)
+   sendAttr(connection, "flashsize (KB)"        , flashsize)
    sendAttr(connection, "flashmode"             , flashmode)
-   sendAttr(connection, "flashspeed"            , flashspeed)
-   sendAttr(connection, "node.heap()"           , node.heap())
+   sendAttr(connection, "flashspeed (MHz)"      , flashspeed / 1000000)
+   sendAttr(connection, "heap free (bytes)"     , node.heap())
    sendAttr(connection, 'Memory in use (KB)'    , collectgarbage("count"))
-   sendAttr(connection, 'IP address'            , wifi.sta.getip())
+   sendAttr(connection, 'Station IP address'    , wifi.sta.getip())
    sendAttr(connection, 'MAC address'           , wifi.sta.getmac())
    connection:send('</ul></body></html>')
 end
