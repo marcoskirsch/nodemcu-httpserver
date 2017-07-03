@@ -125,6 +125,7 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
+               req.user = user
                handleRequest(connection, req, handleError)
             else
                local args = {}
