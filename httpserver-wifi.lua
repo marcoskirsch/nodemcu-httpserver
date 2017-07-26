@@ -19,7 +19,7 @@ end
 
 if (conf.wifi.mode == wifi.STATION) or (conf.wifi.mode == wifi.STATIONAP) then
     print('Client MAC: ',wifi.sta.getmac())
-    wifi.sta.config(conf.wifi.station.ssid, conf.wifi.station.pwd, 1)
+    wifi.sta.config(conf.wifi.station)
 end
 
 print('chip: ',node.chipid())
