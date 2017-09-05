@@ -3,8 +3,7 @@
 -- Author: Marcos Kirsch
 
 local compileAndRemoveIfNeeded = function(f)
-   if file.open(f) then
-      file.close()
+   if file.exists(f) then
       print('Compiling:', f)
       node.compile(f)
       file.remove(f)
