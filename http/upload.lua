@@ -60,11 +60,12 @@ return function (connection, req, args)
 					binaryData = binaryData .. string.char(currentByte)
 				end
 				
+            local mbTmpFilename = string.sub(mbFilename, 0, 27) .. '.dnl' 
 				if (mbOffset > 0) then
-					file.open(mbFilename .. '.dnl','a+')
+					file.open(mbTmpFilename,'a+')
 				else
-					file.remove(mbFilename .. '.dnl')					
-					file.open(mbFilename .. '.dnl','w+')
+					file.remove(mbTmpFilename)					
+					file.open(mbTmpFilename,'w+')
 				end
 				file.seek("set", mbOffset)
 				file.write(binaryData)				
@@ -74,8 +75,8 @@ return function (connection, req, args)
 				
 				if (fileSize == mbLen + mbOffset) then
 					file.remove(mbFilename)					
-					file.rename(mbFilename .. '.dnl', mbFilename)
-					file.remove(mbFilename .. '.dnl')						
+					file.rename(mbTmpFilename, mbFilename)
+					file.remove(mbTmpFilename)						
 				
 					if (string.sub(mbFilename, -4) == '.lua') then
 						file.remove(string.sub(mbFilename, 0, -3) .. "lc")
