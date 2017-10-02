@@ -554,7 +554,7 @@
 
 					<a onclick='document.getElementById("browseInput").click();'>Browse</a>
 					<a onclick='UploadFiles();'>Upload</a>
-					<input id="browseInput" type="file" name="upl" onchange="handleFiles(this.files);" multiple />
+					<form><input id="browseInput" type="file" name="upl" onclick="this.form.reset();" onchange="handleFiles(this.files);" multiple /></form>
 				</div>
 
 				<ul id="fileList">
