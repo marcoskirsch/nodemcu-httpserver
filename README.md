@@ -7,16 +7,16 @@ A (very) simple web server written in Lua for the ESP8266 running the NodeMCU fi
 > you are really abusing its intended purpose. When it comes to scoping your ESP8266
 > applications, the adage Keep It Simple Stupid truly applies.
 >
-> -- <cite>[Terry Ellison](https://github.com/TerryE)</cite>, nodemcu-firmware maintainer,
+> -- <cite>[Terry Ellison](https://github.com/TerryE)</cite>, nodemcu-firmware maintainer
 
 Let the abuse begin.
 
 ## Features
 
-* GET, POST, PUT and minor changes to support other methods
+* GET, POST, PUT (other methods can be supported with minor changes)
 * Multiple MIME types
 * Error pages (404 and others)
-* Server-side execution of Lua scripts
+* *Server-side execution of Lua scripts*
 * Query string argument parsing with decoding of arguments
 * Serving .gz compressed files
 * HTTP Basic Authentication
@@ -24,7 +24,9 @@ Let the abuse begin.
 
 ## How to use
 
-1. Upload server files using [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader).
+1. Modify your local copy of the configuration file httpserver-conf.lua.
+
+2. Upload server files using [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader).
    The easiest is to use GNU Make with the bundled Makefile. Open the Makefile and modify the
    user configuration to point to your nodemcu-uploader script and your serial port.
    Type the following to upload the server code, init.lua (which you may want to modify),
@@ -32,28 +34,24 @@ Let the abuse begin.
 
          make upload_all
 
-   If you only want to upload the server code, then type:
+   If you only want to upload just the server code, then type:
 
          make upload_server
 
-   And if you only want to upload the server files:
+   And if you only want to upload just the files that can be served:
 
          make upload_http
 
-   Restart the server. This will execute init.lua which will compile the server code.
-   Then, assuming init.lua doesn't have it, start the server yourself by typing:
+   Restart the server. This will execute included init.lua which will compile the server code,
+   configure WiFi, and start the server.
 
-         dofile("httpserver.lc")(80)
+3. Want to serve your own files? Put them under the http/ folder and upload to the chip.
+   For example, assuming you want to serve myfile.html, upload by typing:
 
-   In this example, 80 is the port your server is listening at, but you can change it.
+         make upload FILE:=http/myfile.html
 
-2. Want to upload your own files? Move them to the http/ folder. Be careful though,
-   the flash memory seems to fill up quickly and get corrupted.
-
-   All the files you upload must be prefixed with "http/". Wait, what?
-
-   Yes: NodeMCU's filesystem does not support folders, but filenames *can* contain slashes.
-   Only files that begin with "http/" will be accessible through the server.
+   Notice that while NodeMCU's filesystem does not support folders, filenames *can* contain slashes.
+   We take advantage of that and only files that begin with "http/" will be accessible through the server.
 
 3. Visit your server from a web browser.
 
@@ -63,21 +61,19 @@ Let the abuse begin.
    then index.html is served. By the way, unlike most HTTP servers, nodemcu_httpserver treats the URLs in a
    case-sensitive manner.
 
-4. How to use HTTP Basic Authentication.
+## HTTP Basic Authentication.
 
-   Modify variables in configuration file httpserver-conf.lua in order to enable and to configure usernames/passwords.
-   See comments in that file for more details.
+   It's supported. Turn it on in httpserver-conf.lua.
 
-   When enabled, HTTP Basic Authentication is global to every file served by the server.
+   Use it with care and don't fall into a false sense of security: HTTP Basic Authentication should not be
+   considered secure since the server is not using encryption. Username and passwords travel
+   in the clear.
 
-   Remember that HTTP Basic Authentication is a very basic authentication protocol, and should not be
-   considered as secure since the server is not using encryption. Username and passwords travel
-   in plain text.
+## Server-side scripting using your own Lua scripts
 
-## How to use server-side scripting using your own Lua scripts
-
-   Similar to static files, upload a Lua script called "http/[name].lua where you replace [name] with your script's name.
-   The script should return a function that takes three parameters:
+   Yes, you can upload your own Lua scripts! This is pretty powerful.
+   Just put it under http/ and upload it. Make sure it has a .lua extension.
+   Your script should return a function that takes three parameters:
 
       return function (connection, req, args)
          -- code goes here
@@ -107,42 +103,40 @@ Let the abuse begin.
 
 #### Hardware description
 
-   This example assumes that GPIO1 and GPIO2 on the ESP8266 are connected each to a relay
-   that can be controlled. How to wire such thing is outside of the scope of this document
-   [but information is easily found online](https://www.google.com/search?q=opening+a+garage+door+with+a+microcontroller).
+   This example assumes that you are using a [Wemos D1 Pro](https://wiki.wemos.cc/products:d1:d1_mini_pro)
+   with two relay shields and two reed switches.
    The relays are controlled by the microcontroller and act as the push button,
    and can actually be connected in parallel with the existing mechanical button.
+   The switches are wired so that the ESP8266 can tell whether the doors are open
+   or closed at any given time.
 
 #### Software description
 
    This example consists of the following files:
 
-   * **garage_door_opener.html**: Static HTML displays a button with a link
-   to the garage_door_opener.lua script. That's it!
-   * **garage_door_opener.css**: Provides styling for garage_door_opener.html
-   just so it looks pretty.
-   * **garage_door_opener.lua**: Does the actual work. The script first sends
-   a little javascript snippet to redirect the client back to garage_door_opener.html
-   and then toggles the GPIO2 line for a short amount of time (roughly equivalent to
-   the typical button press for opening a garage door) and then toggles it back.
+   * **garage_door.html**: Static HTML displays a form with all options for controlling the
+   two garage doors.
+   * **garage_door_control.html**: Looks like a garage door remote, how neat!
+   * **garage_door_control.css**: Provides styling for garage_door_control.html.
+   * **garage_door.lua**: Does the actual work. The script performs the desired action on
+   the requested door and returns the results as JSON.
    * **apple-touch-icon.png**: This is optional. Provides an icon that
-   will be used if you "Add to Home Screen" the demo on an iPhone. Now it looks like an app!
+   will be used if you "Add to Home Screen" garage_door_control.html on an iPhone.
+   Now it looks like an app!
 
 #### Security implications
 
    Be careful permanently installing something like this in your home. The server provides
    no encryption. Your only layers of security are the WiFi network's password and simple
-   HTTP authentication which sends your password unencrypted.
+   HTTP authentication (if you enable it) which sends your password unencrypted.
 
-   This script is provided simply as an educational example. You've been warned.
+   This script is provided for educational purposes. You've been warned.
 
 ## Not supported
 
 * Other methods: HEAD, DELETE, TRACE, OPTIONS, CONNECT, PATCH
 * Encryption / SSL
-* Multiple users (HTTP Basic Authentication)
-* Only protect certain directories (HTTP Basic Authentication)
-* nodemcu-firmware versions older 1.5.1 (January 2016) because that's what I tested on.
+* Old nodemcu-firmware versions prior to January 2017) because I don't bother to test them.
 
 ## Contributing
 
@@ -151,7 +145,9 @@ Let the abuse begin.
    and that you add examples for new features. I won't test all your changes myself but I
    am very grateful of improvements and fixes. Open issues in GitHub too, that's useful.
 
-   Please follow the coding style as close as possible:
+   Please keep your PRs focused on one thing. I don't mind lots of PRs. I mind PRs that fix multiple unrelated things.
+
+   Follow the coding style as closely as possible:
 
    * No tabs, indent with 3 spaces
    * Unix (LF) line endings
@@ -163,8 +159,9 @@ Let the abuse begin.
 
    The chip is very, very memory constrained.
 
-   * Use a recent nodemcu-firmware with as few optional modules as possible.
-   * Use a firmware build without floating point support. This takes up a good chunk of RAM as well.
-   * Any help reducing the memory needs of the server without crippling its functionality is appreciated!
-   * Compile your Lua scripts in order to reduce their memory usage. The server knows to serve and treat
+   * Use a recent nodemcu-firmware. They've really improved memory usage and fixed leaks.
+   * Use only the modules you need.
+   * Use a firmware build without floating point support if you can.
+   * Any help reducing the memory needs of the server without crippling its functionality is much appreciated!
+   * Compile your Lua scripts in order to reduce their memory usage. The server knows to serve
    both .lua and .lc files as scripts.

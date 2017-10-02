@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
    <head>
-      <link rel="stylesheet" type="text/css" href="garage_door_opener.css">
+      <link rel="stylesheet" type="text/css" href="garage_door_control.css">
       <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
       <meta charset="UTF-8">
       <title>Garage Remote</title>
@@ -11,7 +11,7 @@
 
       function pushTheButton(door)
       {
-         var url = "/garage_door_opener.lua?door=" + door;
+         var url = "/garage_door.lua?action=toggle&door=" + door;
 
          xmlHttp = new XMLHttpRequest();
          xmlHttp.onreadystatechange = processRequest;

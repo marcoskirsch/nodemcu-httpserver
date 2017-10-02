@@ -1,0 +1,32 @@
+<html>
+   <head>
+     <title>Garage control</title>
+   </head>
+   <body>
+
+      <div align="center">
+
+         <h2>Door 1</h2>
+
+         <form action="garage_door.lua" method="post"/>
+           <input type="hidden" name="door" value="1"/>
+           <input type="submit" name="action" value="status"/>
+           <input type="submit" name="action" value="open"/>
+           <input type="submit" name="action" value="close"/>
+           <input type="submit" name="action" value="toggle"/>
+         </form>
+
+         <h2>Door 2</h2>
+
+         <form action="garage_door.lua" method="post"/>
+           <input type="hidden" name="door" value="2"/>
+           <input type="submit" name="action" value="status"/>
+           <input type="submit" name="action" value="open"/>
+           <input type="submit" name="action" value="close"/>
+           <input type="submit" name="action" value="toggle"/>
+         </form>
+
+      </div>
+
+   </body>
+</html>
