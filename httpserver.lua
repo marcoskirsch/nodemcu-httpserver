@@ -90,15 +90,15 @@ return function (port)
                else
                   if allowStatic[method] then
                      uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
-                     fileServeFunction = dofile("httpserver-static.lc")
+                     startServingStatic(connection, req, uri.args)
+                     return
                   else
                      uri.args = {code = 405, errorString = "Method not supported", logFunction = log}
                      fileServeFunction = dofile("httpserver-error.lc")
                   end
-                  uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
-                  startServingStatic(connection, req, uri.args)
                end
             end
+            startServing(fileServeFunction, connection, req, uri.args)
          end
 
          local function onReceive(connection, payload)
@@ -172,7 +172,7 @@ return function (port)
                local fileSize = file.list()[fileInfo.file]
                -- Chunks larger than 1024 don't work.
                -- https://github.com/nodemcu/nodemcu-firmware/issues/1075
-               local chunkSize = 1024
+               local chunkSize = 512
                local fileHandle = file.open(fileInfo.file)
                if fileSize > fileInfo.sent then
                   fileHandle:seek("set", fileInfo.sent)
