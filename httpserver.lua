@@ -67,19 +67,19 @@ return function (port)
                uri.args = {code = 400, errorString = "Bad Request", logFunction = log}
                fileServeFunction = dofile("httpserver-error.lc")
             else
-               local fileExists = file.open(uri.file, "r")
-               file.close()
+               local fileExists = false
 
-               if not fileExists then
+               if not file.exists(uri.file) then
+                  -- print(uri.file .. " not found, checking gz version...")
                   -- gzip check
-                  fileExists = file.open(uri.file .. ".gz", "r")
-                  file.close()
-
-                  if fileExists then
-                     --print("gzip variant exists, serving that one")
+                  if file.exists(uri.file .. ".gz") then
+                     -- print("gzip variant exists, serving that one")
                      uri.file = uri.file .. ".gz"
                      uri.isGzipped = true
+                     fileExists = true
                   end
+               else
+                  fileExists = true
                end
 
                if not fileExists then
@@ -132,6 +132,7 @@ return function (port)
             end
 
             if user and req.methodIsValid and (req.method == "GET" or req.method == "POST" or req.method == "PUT") then
+               req.user = user
                handleRequest(connection, req, handleError)
             else
                local args = {}

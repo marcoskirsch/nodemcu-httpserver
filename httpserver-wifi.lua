@@ -14,12 +14,12 @@ wifi.setmode(conf.wifi.mode)
 if (conf.wifi.mode == wifi.SOFTAP) or (conf.wifi.mode == wifi.STATIONAP) then
     print('AP MAC: ',wifi.ap.getmac())
     wifi.ap.config(conf.wifi.accessPoint.config)
-    wifi.ap.setip(conf.wifi.accessPoint.ip)
+    wifi.ap.setip(conf.wifi.accessPoint.net)
 end
 
 if (conf.wifi.mode == wifi.STATION) or (conf.wifi.mode == wifi.STATIONAP) then
     print('Client MAC: ',wifi.sta.getmac())
-    wifi.sta.config(conf.wifi.station.ssid, conf.wifi.station.pwd, 1)
+    wifi.sta.config(conf.wifi.station)
 end
 
 print('chip: ',node.chipid())

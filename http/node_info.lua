@@ -28,5 +28,6 @@ return function (connection, req, args)
    sendAttr(connection, 'Station IP address'    , ip)
    sendAttr(connection, 'Station subnet mask'   , subnetMask)
    sendAttr(connection, 'MAC address'           , wifi.sta.getmac())
+   sendAttr(connection, 'Auth user'             , req.user)
    connection:send('</ul></body></html>')
 end

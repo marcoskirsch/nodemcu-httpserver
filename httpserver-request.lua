@@ -46,6 +46,10 @@ local function getRequestData(payload)
    local requestData
    return function ()
       --print("Getting Request Data")
+      -- for backward compatibility before v2.1
+      if (sjson == nil) then
+         sjson = cjson
+      end
       if requestData then
          return requestData
       else
@@ -60,7 +64,7 @@ local function getRequestData(payload)
          --print("body = [" .. body .. "]")
          if mimeType == "application/json" then
             --print("JSON: " .. body)
-            requestData = cjson.decode(body)
+            requestData = sjson.decode(body)
          elseif mimeType == "application/x-www-form-urlencoded" then
             requestData = parseFormData(body)
          else
