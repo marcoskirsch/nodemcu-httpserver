@@ -32,6 +32,10 @@ return function (connection, req, args)
          Whoever manages to modify nodemcu-httpserver to load all four images without crashing wins a prize!
       </p>
       <p>
+         OK I guess I win the prize, as now you can load five cars.<br>
+            Cheers HHHartmann
+      </p>
+      <p>
          choose: <a href="?n=1">show one car</a>
          <a href="?n=2">show two cars</a>
          <a href="?n=3">show three cars</a>
