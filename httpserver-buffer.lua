@@ -1,8 +1,8 @@
--- httpserver-connection
--- Part of nodemcu-httpserver, provides a buffered connection object that can handle multiple
--- consecutive send() calls, and buffers small payloads to send once they get big.
--- For this to work, it must be used from a coroutine and owner is responsible for the final
--- flush() and for closing the connection.
+-- httpserver-buffer
+-- Part of nodemcu-httpserver, provides a buffer that behaves like a connection object
+-- that can handle multiple consecutive send() calls, and buffers small payloads up to 1400 bytes.
+-- This is primarily user to collect the send requests done by the head script.
+-- The owner is responsible to call getBuffer and send its result
 -- Author: Gregor Hartmann
 
 local Buffer = {}
