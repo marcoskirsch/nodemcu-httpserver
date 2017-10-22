@@ -33,6 +33,29 @@
 
 			.dropBox {width:100vw; height:100vh; margin-top: -200px; padding-top: 200px;}
 
+			#uploaddir{
+				background-color: #2E3134;
+				font-size:16px;
+				font-weight:bold;
+				color:#7f858a;
+				padding: 40px 50px;
+				margin-bottom: 30px;
+			}
+
+			#uploaddir a{
+				background-color:#007a96;
+				padding:12px 26px;
+				color:#fff;
+				font-size:14px;
+				border-radius:2px;
+				cursor:pointer;
+				margin-top:12px;
+				line-height:1;
+				margin-left: 10px;
+			}
+			#selectedDir {
+				margin-top:20px;
+			}
 			#upload{
 				font-family:'PT Sans Narrow', sans-serif;
 				background-color:#373a3d;
@@ -140,14 +163,24 @@
 				position: absolute;
 			}
 
+			.delete:after{
+				color: #ff0000;
+				content: "\2718";
+			}
+
+			.uploaded:after{
+				color: #00ff00;
+				content: "\2714";
+			}
+
 			#upload ul li span{
 				width: 15px;
 				height: 12px;
-				background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAaCAYAAABozQZiAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2RpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDpFQUY1MzY0QUU3QjdFMjExODE0NkUyMUJBNERDNDk0NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpCOTc5MTBDQ0I3RUYxMUUyOUVBQkNFOURERDIzQkU4NSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpCOTc5MTBDQkI3RUYxMUUyOUVBQkNFOURERDIzQkU4NSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IFdpbmRvd3MiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFQUY1MzY0QUU3QjdFMjExODE0NkUyMUJBNERDNDk0NyIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFQUY1MzY0QUU3QjdFMjExODE0NkUyMUJBNERDNDk0NyIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PvX6SiYAAAGjSURBVHjanJRPRMRREMfbNtE19hQlolNdomsRaZUiIlHKdiml7CpFolU6pEOWTUTRJZKIakmHsqQ99UedOiT2lG6xRPSdzFtjGi+/ho99836/78z8Zt7bUN3VfElAKwcRkC/9h/AAPIKmsgDCMNgB3ezvB8m8BQZ4/QkmSVwJbsCcR7gOYrz+Av0gQ2WfgWaGvimphEsgLvwRcEQLypxVLy4KP678cbDnHMqc4GZMiQBU2huX62wWbMqSXLenWeDKW1alr4A13QjZ7YT1AmwDLFhd1KOi0naFf8lVmWYdklHuQTXo8g3eOiT07UOgFXy4zcPB2wpTjAdpcA8iVgbs0yTe8dsi90N3NdEUfifYfwBtPCZn9CzF6wJXlGt8Of3JXCVebAAXfOXIxoTQfVJYlk3n9NgIQGc9LfYpaxRcSzHdkD4jwKoStqujXOy2FUBnzPpGRQHODfErePprzjHVHGf1qom/xCTcVlXkPFMoiocNYQ/PM+MLQOIZJexlUUGsZYBOKaYRPAvhieq0DJCUt45uVZ5LrLXGIQJ0uP8uZ98CDADM9WkEBoK0xwAAAABJRU5ErkJggg==') no-repeat;
+				cursor:pointer;
 				position: absolute;
 				top: 34px;
 				right: 33px;
-				cursor:pointer;
+				font-size:18px;
 			}
 
 			#upload ul li.working span{
@@ -189,7 +222,7 @@
 			var chunkSize = 128;
 			var totalUploaded = 0;
 
-			var tpl = '<li class="working" id="file%filenum%"><div class="chart" id="graph%filenum%" data-percent="0"></div><p>%filename%<i>%filesize%</i></p><span id="fileStatus%filenum%" onclick="DeleteFiles(%filenum%);"></span></li>';
+			var tpl = '<li class="working" id="file%filenum%"><div class="chart" id="graph%filenum%" data-percent="0"></div><p>%filename%<i>%filesize%</i></p><span class="delete" id="fileStatus%filenum%" onclick="DeleteFiles(%filenum%);"></span></li>';
 
 			document.addEventListener("DOMContentLoaded", function() {
 				var dropbox;
@@ -200,6 +233,8 @@
 				dropbox.addEventListener("drop", drop, false);
 
 				UpdateFileList();
+
+				UploadDir("http");
 			});
 
 			function dragenter(e) {
@@ -235,13 +270,13 @@
 				var fileNames = {};
 
 				for (var i = 0; i < filesCount; i++) {
-					fileNames[tfiles[i].name] = i;
+					fileNames[uploadDir + tfiles[i].name] = i;
 				}
 
 				Keys(fileNames).sort(function(a,b){var c=a.toLowerCase(),d=b.toLowerCase();return c<d?-1:c>d?1:0}).forEach(function(item) {
 					var i = fileNames[item];
 
-					var append = tpl.replace(/%filename%/g, tfiles[i].name);
+					var append = tpl.replace(/%filename%/g, uploadDir + tfiles[i].name);
 					append = append.replace(/%filesize%/g, formatFileSize(tfiles[i].size));
 					append = append.replace(/%filenum%/g, i);
 
@@ -380,7 +415,7 @@
 								totalUploaded = 0;
 
 								if (statusElement) {
-									statusElement.style["background-position"] = "0 3px";
+									statusElement.classList.add("uploaded");
 								}
 
 								if (currentUploadingFile < files.length) {
@@ -396,7 +431,7 @@
 						fileUploadRequest = 0;
 					}
 
-					lastRequest = 'upload.lua?cmd=upload&filename=' + file.name + '&filesize=' + file.size + '&len=' + chunkLen + '&offset=' + sendingOffset + '&data=' + filedata;
+					lastRequest = 'upload.lua?cmd=upload&filename=' + uploadDir + file.name + '&filesize=' + file.size + '&len=' + chunkLen + '&offset=' + sendingOffset + '&data=' + filedata;
 
 					fileUploadRequest.timeout = 5000;
 					fileUploadRequest.open('GET', lastRequest, true);
@@ -406,6 +441,16 @@
 				fr.readAsArrayBuffer(file);
 			}
 
+			function UploadDir(dir) {
+				if (uploadingInProgress == 0) {
+					document.getElementById('dir').innerHTML = "/" + dir;
+					uploadDir = dir;
+					if (!(dir == "")) {
+						dir += "/";
+					}
+				}
+			}
+			
 			function formatFileSize(bytes) {
 				if (typeof bytes !== 'number') {
 					return '';
@@ -494,14 +539,14 @@
 
 						document.getElementById('fileInfo').innerHTML = '';
 
-						var tpl = '<li class="working"><p style="left: 30px;">%filenamelink%<i>%filesize%</i></p><span id="fileStatus" onclick="RemoveFile(\'%filename%\');"></span></li>';
+						var tpl = '<li class="working"><p style="left: 30px;">%filenamelink%<i>%filesize%</i></p><span class="delete" id="fileStatus" onclick="RemoveFile(\'%filename%\');"></span></li>';
 						var tplTotal = '<li class="working"><p style="left: 30px;">Used:<i>%used%</i></p></li><li class="working"><p style="left: 30px;">Free:<i>%free%</i></p></li><li class="working"><p style="left: 30px;">Total:<i>%total%</i></p></li>';
 
 						var append, link;
 
 						Keys(fileList).sort(function(a,b){var c=a.toLowerCase(),d=b.toLowerCase();return c<d?-1:c>d?1:0}).forEach(function(item) {
-							if (!(item.match(/\.lc$/ig))) {
-								link = item.replace(/\.gz$/g, '');
+							if (!item.match(/\.lc$/ig) && item.match(/^http\//ig)) {
+								link = item.replace(/\.gz$/g, '').replace(/^http\//g, '');
 								append = tpl.replace(/%filenamelink%/g, '<a href="' + link + '" target="_blank">' + item + '</a>');
 							}
 							else {
@@ -549,6 +594,10 @@
 	<body>
 		<div id="dropbox" class="dropBox">
 			<div id="upload">
+				<div id="uploaddir" class="uploadDir">
+					<a onclick='UploadDir("");'>/</a>
+					<a onclick='UploadDir("http");'>/http</a>
+					<div id="selectedDir">selected Directory: <div id = "dir">bla</div></div></div>
 				<div id="drop">
 					Drop Here
 
