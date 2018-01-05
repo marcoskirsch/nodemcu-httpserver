@@ -60,6 +60,7 @@ return function (port)
                -- nodemcu-firmware cannot handle long filenames.
                uri.args = {code = 400, errorString = "Bad Request", logFunction = log}
                fileServeFunction = dofile("httpserver-error.lc")
+               req=nil
             else
                local fileExists = false
 
@@ -79,15 +80,18 @@ return function (port)
                if not fileExists then
                   uri.args = {code = 404, errorString = "Not Found", logFunction = log}
                   fileServeFunction = dofile("httpserver-error.lc")
+                  req=nil
                elseif uri.isScript then
                   fileServeFunction = dofile(uri.file)
                else
                   if allowStatic[method] then
                      uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
                      fileServeFunction = dofile("httpserver-static.lc")
+                     req=nil
                   else
                      uri.args = {code = 405, errorString = "Method not supported", logFunction = log}
                      fileServeFunction = dofile("httpserver-error.lc")
+                     req=nil
                   end
                end
             end
