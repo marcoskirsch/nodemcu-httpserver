@@ -21,7 +21,8 @@ local function uri_decode(input)
 end
 
 local function parseArgs(args)
-   local r = {}; i=1
+   local r = {}
+   local i = 1
    if args == nil or args == "" then return r end
    for arg in string.gmatch(args, "([^&]+)") do
       local name, value = string.match(arg, "(.*)=(.*)")
@@ -83,7 +84,7 @@ local function parseUri(uri)
 
    if uri == nil then return r end
    if uri == "/" then uri = "/index.html" end
-   questionMarkPos, b, c, d, e, f = uri:find("?")
+   local questionMarkPos, b, c, d, e, f = uri:find("?")
    if questionMarkPos == nil then
       r.file = uri:sub(1, questionMarkPos)
       r.args = {}
@@ -115,6 +116,7 @@ return function (request)
    if not e then return nil end
    local line = request:sub(1, e - 1)
    local r = {}
+   local _, i
    _, i, r.method, r.request = line:find("^([A-Z]+) (.-) HTTP/[1-9]+.[0-9]+$")
    if not (r.method and r.request) then
       --print("invalid request: ")
