@@ -37,7 +37,7 @@ end
 
 -- logic OR for number values
 local function lor(x,y)
-   result = 0
+   local result = 0
    for p=1,8 do result = result + (((bit(x,p) or bit(y,p)) == true) and uipow(2, (p-1)) or 0) end
    return result
 end
