@@ -2,7 +2,7 @@
 -- Part of nodemcu-httpserver, authenticates a user using http basic auth.
 -- Author: Sam Dieck
 
-basicAuth = {}
+local basicAuth = {}
 
 -- Returns true if the user/password match one of the users/passwords in httpserver-conf.lua.
 -- Returns false otherwise.
