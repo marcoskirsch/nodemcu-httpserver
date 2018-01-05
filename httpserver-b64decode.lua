@@ -44,7 +44,7 @@ end
 
 -- Character decoding table
 local function toBase64Byte(char)
-   ascii = string.byte(char, 1)
+   local ascii = string.byte(char, 1)
    if ascii >= string.byte('A', 1) and ascii <= string.byte('Z', 1) then return ascii - string.byte('A', 1)
    elseif ascii >= string.byte('a', 1) and ascii <= string.byte('z', 1) then return ascii - string.byte('a', 1) + 26
    elseif ascii >= string.byte('0', 1) and ascii <= string.byte('9', 1) then return ascii + 4
