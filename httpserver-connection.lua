@@ -5,7 +5,7 @@
 -- flush() and for closing the connection.
 -- Author: Philip Gladstone, Marcos Kirsch
 
-BufferedConnection = {}
+local BufferedConnection = {}
 
 -- parameter is the nodemcu-firmware connection
 function BufferedConnection:new(connection)
