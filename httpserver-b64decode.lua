@@ -37,14 +37,14 @@ end
 
 -- logic OR for number values
 local function lor(x,y)
-   result = 0
+   local result = 0
    for p=1,8 do result = result + (((bit(x,p) or bit(y,p)) == true) and uipow(2, (p-1)) or 0) end
    return result
 end
 
 -- Character decoding table
 local function toBase64Byte(char)
-   ascii = string.byte(char, 1)
+   local ascii = string.byte(char, 1)
    if ascii >= string.byte('A', 1) and ascii <= string.byte('Z', 1) then return ascii - string.byte('A', 1)
    elseif ascii >= string.byte('a', 1) and ascii <= string.byte('z', 1) then return ascii - string.byte('a', 1) + 26
    elseif ascii >= string.byte('0', 1) and ascii <= string.byte('9', 1) then return ascii + 4
