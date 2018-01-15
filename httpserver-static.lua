@@ -4,6 +4,8 @@
 
 return function (connection, req, args)
    dofile("httpserver-header.lc")(connection, 200, args.ext, args.isGzipped)
+   connection:flush()
+   coroutine.yield()
    -- Send file in little chunks
    local bytesRemaining = file.list()[args.file]
    -- Chunks larger than 1024 don't work.
@@ -13,9 +15,9 @@ return function (connection, req, args)
    while bytesRemaining > 0 do
       local bytesToRead = 0
       if bytesRemaining > chunkSize then bytesToRead = chunkSize else bytesToRead = bytesRemaining end
-      local chunk = fileHandle:read(bytesToRead)
-      connection:send(chunk)
-      bytesRemaining = bytesRemaining - #chunk
+      connection.connection:send(fileHandle:read(bytesToRead)) 
+      coroutine.yield()
+      bytesRemaining = bytesRemaining - bytesToRead
       --print(args.file .. ": Sent "..#chunk.. " bytes, " .. bytesRemaining .. " to go.")
       chunk = nil
       collectgarbage()
