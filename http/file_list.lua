@@ -16,7 +16,7 @@ return function (connection, req, args)
    connection:send("<b>Flash Address: </b> " .. flashAddress .. " bytes<br/>\n" ..
                    "<b>Flash Size: </b> " .. flashSize .. " bytes<br/>\n")
 
-   connection:send("<p>\n<b>Files:</b><br/>\n<ul>\n")
+   connection:send("<b>Files:</b><br/>\n<ul>\n")
    for name, size in pairs(file.list()) do
       local isHttpFile = string.match(name, "(http/)") ~= nil
       if isHttpFile then
@@ -24,6 +24,6 @@ return function (connection, req, args)
          connection:send('   <li><a href="' .. url .. '">' .. url .. "</a> (" .. size .. " bytes)</li>\n")
       end
    end
-   connection:send("</ul>\n</p>\n</body></html>")
+   connection:send("</ul>\n</body></html>")
 end
 

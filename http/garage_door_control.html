@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html>
-   <head>
-      <link rel="stylesheet" type="text/css" href="garage_door_control.css">
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-      <meta charset="UTF-8">
-      <title>Garage Remote</title>
-   </head>
-   <script>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="garage_door_control.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <meta charset="UTF-8">
+    <title>Garage Remote</title>
+    <script>
       var xmlHttp = null;
 
       function pushTheButton(door)
@@ -68,17 +67,22 @@
          }
       }
    </script>
-   <body bgcolor="#777777">
-   <div id="remote">
-      <div id="label" class="start"></div>
-      <a href="#" onclick="pushTheButton(1);" class="button button-1">
-          <span>I</span>
-      </a>
-      <a href="#" onclick="pushTheButton(2); " class="button button-2">
-          <span>II</span>
-      </a>
-      <div id="spacer"></div>
-   </div>
+   <style>
+     body {
+       background-color: #777;
+     }
+   </style>
+   </head>
+   <body>
+     <div id="remote">
+       <div id="label" class="start"></div>
+       <a href="#" onclick="pushTheButton(1);" class="button button-1">
+         <span>I</span>
+       </a>
+       <a href="#" onclick="pushTheButton(2); " class="button button-2">
+         <span>II</span>
+       </a>
+       <div id="spacer"></div>
+     </div>
    </body>
 </html>
-
