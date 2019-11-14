@@ -13,6 +13,7 @@ return function (port)
          -- We do it in a separate thread because we need to send in little chunks and wait for the onSent event
          -- before we can send more, or we risk overflowing the mcu's buffer.
          local connectionThread
+         local fileInfo
 
          local allowStatic = {GET=true, HEAD=true, POST=false, PUT=false, DELETE=false, TRACE=false, OPTIONS=false, CONNECT=false, PATCH=false}
 
@@ -26,6 +27,10 @@ return function (port)
             end
          end
 
+         local function startServingStatic(connection, req, args)
+            fileInfo = dofile("httpserver-static.lc")(connection, req, args)
+         end
+         
          local function startServing(fileServeFunction, connection, req, args)
             connectionThread = coroutine.create(function(fileServeFunction, bufferedConnection, req, args)
                fileServeFunction(bufferedConnection, req, args)
@@ -40,6 +45,7 @@ return function (port)
 
             local BufferedConnectionClass = dofile("httpserver-connection.lc")
             local bufferedConnection = BufferedConnectionClass:new(connection)
+            BufferedConnectionClass = nil
             local status, err = coroutine.resume(connectionThread, fileServeFunction, bufferedConnection, req, args)
             if not status then
                log(connection, "Error: "..err)
@@ -50,7 +56,7 @@ return function (port)
             end
          end
 
-         local function handleRequest(connection, req)
+         local function handleRequest(connection, req, handleError)
             collectgarbage()
             local method = req.method
             local uri = req.uri
@@ -84,7 +90,8 @@ return function (port)
                else
                   if allowStatic[method] then
                      uri.args = {file = uri.file, ext = uri.ext, isGzipped = uri.isGzipped}
-                     fileServeFunction = dofile("httpserver-static.lc")
+                     startServingStatic(connection, req, uri.args)
+                     return
                   else
                      uri.args = {code = 405, errorString = "Method not supported", logFunction = log}
                      fileServeFunction = dofile("httpserver-error.lc")
@@ -95,7 +102,7 @@ return function (port)
          end
 
          local function onReceive(connection, payload)
-            collectgarbage()
+--            collectgarbage()
             local conf = dofile("httpserver-conf.lc")
             local auth
             local user = "Anonymous"
@@ -162,6 +169,27 @@ return function (port)
                   connectionThread = nil
                   collectgarbage()
                end
+            elseif fileInfo then
+               local fileSize = file.list()[fileInfo.file]
+               -- Chunks larger than 1024 don't work.
+               -- https://github.com/nodemcu/nodemcu-firmware/issues/1075
+               local chunkSize = 512
+               local fileHandle = file.open(fileInfo.file)
+               if fileSize > fileInfo.sent then
+                  fileHandle:seek("set", fileInfo.sent)
+                  local chunk = fileHandle:read(chunkSize)
+                  fileHandle:close()
+                  fileHandle = nil
+                  fileInfo.sent = fileInfo.sent + #chunk
+                  connection:send(chunk)
+                  -- print(fileInfo.file .. ": Sent "..#chunk.. " bytes, " .. fileSize - fileInfo.sent .. " to go.")
+                  chunk = nil
+               else
+                  log(connection, "closing connetion", "Finished sending: "..fileInfo.file)
+                  connection:close()
+                  fileInfo = nil
+               end
+               collectgarbage()
             end
          end
 
@@ -170,6 +198,10 @@ return function (port)
 --            print("disconnected")
             if connectionThread then
                connectionThread = nil
+               collectgarbage()
+            end
+            if fileInfo then
+               fileInfo = nil
                collectgarbage()
             end
          end
