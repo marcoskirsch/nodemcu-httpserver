@@ -18,7 +18,7 @@ return function (connection, req, args)
 
    dofile("httpserver-header.lc")(connection, 200, 'html')
    connection:send([===[
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!doctype html>
 <html lang="en">
    <head>
       <meta http-equiv="content-type" content="text/html; charset=utf-8">
