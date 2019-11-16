@@ -56,7 +56,7 @@ Let the abuse begin.
 3. Visit your server from a web browser.
 
    __Example:__ Say the IP for your ESP8266 is 2.2.2.2 and the server is
-   running in the default port 80. Go to (http://2.2.2.2/index.html)[http://2.2.2.2/index.html] using your web browser.
+   running in the default port 80. Go to <http://2.2.2.2/index.html> using your web browser.
    The ESP8266 will serve you with the contents of the file "http/index.html" (if it exists). If you visit the root (/)
    then index.html is served. By the way, unlike most HTTP servers, nodemcu_httpserver treats the URLs in a
    case-sensitive manner.
@@ -87,6 +87,20 @@ Let the abuse begin.
 
    For example, if the client requests _http://2.2.2.2/foo.lua?color=red_ then the server will execute the function
    in your Lua script _foo.lua_ and pass in _connection_ and _args_, where _args.color = "red"_.
+
+## [LFS](https://nodemcu.readthedocs.io/en/master/lfs/) support.
+
+   NodeMCU allows to run Lua scripts from LFS in order to save RAM resources.
+   *nodemcu-httpserver* makes it easy to move your code to LFS.
+   In order to run *nodemcu-httpserver* from LFS:
+
+   1. move your code to `srv` folder (if you want it to be included in LFS image)
+
+   1. Compile contents of `srv` into LFS image. There's a [cloud service](https://blog.ellisons.org.uk/article/nodemcu/a-lua-cross-compile-web-service/) and [docker image](https://github.com/marcelstoer/docker-nodemcu-build) that will help you with that.
+
+   1. Upload image file under `lfs.img` name.
+
+   1. Reboot you NodeMCU. Init script will pick up image and apply it for you.
 
 ### Example: Garage door opener
 
