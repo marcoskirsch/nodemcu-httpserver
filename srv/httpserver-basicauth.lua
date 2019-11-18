@@ -18,7 +18,7 @@ end
 -- Returns the username if header contains valid credentials,
 -- nil otherwise.
 function basicAuth.authenticate(header)
-   local conf = dofile("httpserver-conf.lc")
+   local conf = dofile("httpserver-conf.lua")
    local credentials_enc = header:match("Authorization: Basic ([A-Za-z0-9+/=]+)")
    if not credentials_enc then
       return nil
@@ -35,7 +35,7 @@ function basicAuth.authenticate(header)
 end
 
 function basicAuth.authErrorHeader()
-   local conf = dofile("httpserver-conf.lc")
+   local conf = dofile("httpserver-conf.lua")
    return "WWW-Authenticate: Basic realm=\"" .. conf.auth.realm .. "\""
 end
 

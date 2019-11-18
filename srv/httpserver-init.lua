@@ -5,7 +5,7 @@
 -- Function for starting the server.
 -- If you compiled the mdns module, then it will also register with mDNS.
 local startServer = function(ip)
-   local conf = dofile('httpserver-conf.lc')
+   local conf = dofile('httpserver-conf.lua')
    if (dofile("httpserver.lc")(conf['general']['port'])) then
       print("nodemcu-httpserver running at:")
       print("   http://" .. ip .. ":" ..  conf['general']['port'])

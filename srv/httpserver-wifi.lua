@@ -2,12 +2,7 @@
 -- Part of nodemcu-httpserver, configures NodeMCU's WiFI in boot.
 -- Author: Marcos Kirsch
 
-local conf = nil
-if file.exists("httpserver-conf.lc") then
-   conf = dofile("httpserver-conf.lc")
-else
-   conf = dofile("httpserver-conf.lua")
-end
+local conf = dofile("httpserver-conf.lua")
 
 wifi.setmode(conf.wifi.mode)
 
