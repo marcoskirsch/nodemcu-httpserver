@@ -38,6 +38,10 @@ Let the abuse begin.
 
          make upload_server
 
+   If you only want to update wifi configuration, type:
+
+         make upload_wifi_config
+
    And if you only want to upload just the files that can be served:
 
          make upload_http
@@ -98,7 +102,7 @@ Let the abuse begin.
 
    1. Compile contents of `srv` into LFS image. There's a [cloud service](https://blog.ellisons.org.uk/article/nodemcu/a-lua-cross-compile-web-service/) and [docker image](https://github.com/marcelstoer/docker-nodemcu-build) that will help you with that.
 
-   1. Upload image file under `lfs.img` name.
+   1. Upload image file under `lfs.img` name. You may use Makefile rules `upload_lfs` and `upload_all_lfs` for this.
 
    1. Reboot you NodeMCU. Init script will pick up image and apply it for you.
 
