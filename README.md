@@ -26,7 +26,7 @@ Let the abuse begin.
 
 1. Modify your local copy of the configuration file httpserver-conf.lua.
 
-2. Upload server files using [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader).
+2. Upload server files using [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader) or [nodemcu-tool](https://github.com/AndiDittrich/NodeMCU-Tool).
    The easiest is to use GNU Make with the bundled Makefile. Open the Makefile and modify the
    user configuration to point to your nodemcu-uploader script and your serial port.
    Type the following to upload the server code, init.lua (which you may want to modify),
@@ -48,6 +48,10 @@ Let the abuse begin.
 
    Restart the server. This will execute included init.lua which will compile the server code,
    configure WiFi, and start the server.
+
+   nodemcu-uploader is used by default. In order to switch to nodemcu-tool, use option `USE_NODEMCU_TOOL`. For example, to upload wifi configuration using nodemcu-tool, use command:
+
+         make upload_wifi_config USE_NODEMCU_TOOL=1
 
 3. Want to serve your own files? Put them under the http/ folder and upload to the chip.
    For example, assuming you want to serve myfile.html, upload by typing:

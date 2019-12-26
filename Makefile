@@ -3,15 +3,26 @@
 ######################################################################
 
 # Path to nodemcu-uploader (https://github.com/kmpm/nodemcu-uploader)
-NODEMCU-UPLOADER?=python ../nodemcu-uploader/nodemcu-uploader.py
+NODEMCU_UPLOADER?=python ../nodemcu-uploader/nodemcu-uploader.py
+
+# Path to nodemcu-tool (https://github.com/AndiDittrich/NodeMCU-Tool)
+NODEMCU_TOOL?=../nodemcu-tool/node_modules/nodemcu-tool/bin/nodemcu-tool.js
+
+USE_NODEMCU_TOOL?=
 
 # Serial port
 PORT?=/dev/cu.SLAB_USBtoUART
 SPEED?=115200
 
+ifdef USE_NODEMCU_TOOL
 define _upload
-@$(NODEMCU-UPLOADER) -b $(SPEED) --start_baud $(SPEED) -p $(PORT) upload $^
+@$(NODEMCU_TOOL) -b $(SPEED) --baud $(SPEED) -p $(PORT) upload --keeppath $^
 endef
+else
+define _upload
+@$(NODEMCU_UPLOADER) -b $(SPEED) --start_baud $(SPEED) -p $(PORT) upload $^
+endef
+endif
 
 ######################################################################
 
@@ -62,5 +73,6 @@ upload_all_lfs: $(HTTP_FILES) $(LFS_FILES) $(WIFI_CONFIG)
 	$(_upload)
 
 .ENTRY: usage
+MAKEFLAGS: --always-make
 .PHONY: usage upload_http upload_server upload_wifi_config \
 upload_lfs upload_all upload_all_lfs
