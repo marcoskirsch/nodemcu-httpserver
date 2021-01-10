@@ -5,8 +5,11 @@
 # Path to nodemcu-uploader (https://github.com/kmpm/nodemcu-uploader)
 NODEMCU-UPLOADER?=python ../nodemcu-uploader/nodemcu-uploader.py
 
+# Path to LUA cross compiler (part of the nodemcu firmware; only needed to compile the LFS image yourself)
+LUACC?=../nodemcu-firmware/luac.cross
+
 # Serial port
-PORT?=/dev/cu.SLAB_USBtoUART
+PORT?=$(shell ls /dev/cu.SLAB_USBtoUART /dev/ttyUSB* 2>/dev/null|head -n1)
 SPEED?=115200
 
 define _upload
@@ -28,8 +31,10 @@ usage:
 	@echo "make upload_http          to upload files to be served"
 	@echo "make upload_server        to upload the server code and init.lua"
 	@echo "make upload_all           to upload all"
+	@echo "make upload_lfs           to upload lfs based server code"
+	@echo "make upload_all_lfs       to upload all (LFS based)"
 
-# Upload one files only
+# Upload one file only
 upload: $(FILE)
 	$(_upload)
 
@@ -49,9 +54,8 @@ upload_wifi_config: $(WIFI_CONFIG)
 upload_lfs: $(LFS_FILES)
 	$(_upload)
 
-# Throw error if lfs file not found
 $(LFS_IMAGE):
-	$(error File $(LFS_IMAGE) not found)
+	$(LUACC) -f -o $(LFS_IMAGE) srv/*.lua
 
 # Upload all non-lfs files
 upload_all: $(HTTP_FILES) $(SERVER_FILES) $(WIFI_CONFIG)
