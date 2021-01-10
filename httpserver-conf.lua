@@ -13,7 +13,7 @@ conf.general.port = 80
 -- WiFi configuration
 conf.wifi = {}
 -- Can be wifi.STATION, wifi.SOFTAP, or wifi.STATIONAP
-conf.wifi.mode = wifi.STATION
+conf.wifi.mode = wifi.SOFTAP
 -- Theses apply only when configured as Access Point (wifi.SOFTAP or wifi.STATIONAP)
 if (conf.wifi.mode == wifi.SOFTAP) or (conf.wifi.mode == wifi.STATIONAP) then
    conf.wifi.accessPoint = {}
