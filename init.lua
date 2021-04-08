@@ -9,13 +9,7 @@ if node.getpartitiontable().lfs_size > 0 then
 	 f:flush()
 	 f:close()
 	 file.remove("httpserver-compile.lua")
-	 if (node.LFS.reload) then
-	    node.LFS.reload("lfs.img")
-	 else
-	    print "using old flashreload fallback."
-	    print " Consider updating to recent nodeMCU firmware!" 
-	    node.flashreload("lfs.img")
-	 end
+	 node.LFS.reload("lfs.img")
       end
    end
    pcall(node.flashindex("_init"))
