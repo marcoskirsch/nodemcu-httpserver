@@ -154,7 +154,7 @@ Let the abuse begin.
 
 * Other methods: HEAD, DELETE, TRACE, OPTIONS, CONNECT, PATCH
 * Encryption / SSL
-* Old nodemcu-firmware versions prior to January 2017) because I don't bother to test them.
+* Old nodemcu-firmware versions prior to January 2021) because I don't bother to test them.
 
 ## Contributing
 
