@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Led control</title>
+    <style>
+        div {
+            text-align: center;
+        }
+
+        input[type=button] {
+            width: 15em;
+            height: 10em;
+            border-radius: 30px;
+        }
+
+        .off {
+            background: gray;
+        }
+
+        .on {
+            background: blue;
+        }
+
+    </style>
+    <script type="module">
+        function update_button() {
+            fetch("/led.lua").then(resp => {
+                if (resp.status == 200) {
+                    return resp.json();
+                }
+                throw Error("Communication error");
+            })
+                .then(resp => {
+                    let el = document.getElementById("status");
+                    el.classList = resp.on ? ["on"] : ["off"];
+                })
+                .catch(err => console.error(err.message));
+        }
+
+        function toggle_led() {
+            let on = document.getElementById("status").classList[0] == "on";
+            let search = new URLSearchParams({ on: !on });
+            fetch(`/led.lua?${search.toString()}`, { method: "POST" })
+                .then(_ => update_button())
+                .catch(err => console.error(err.message));
+        }
+
+        window.addEventListener("load", () => {
+            update_button();
+            document.getElementById("status").addEventListener("click", toggle_led);
+        });
+    </script>
+</head>
+
+<body>
+    <div>
+        <h2>On board LED</h2>
+        <input type="button" id="status" class="off">
+    </div>
+</body>
+
+</html>
